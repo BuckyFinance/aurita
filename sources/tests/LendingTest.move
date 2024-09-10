@@ -6,6 +6,7 @@ module account::mock_lending_test {
     use aptos_framework::coin::{Self, Coin};
     use aptos_framework::account;
 
+    const BASE_12: u256 = 1000000000000;
     const ERR_TEST: u64 = 1000;
 
     struct FakeAPT {}
@@ -43,9 +44,8 @@ module account::mock_lending_test {
 
     public entry fun create_fake_user(user: &signer) acquires FreeCoins {
         init_coin_stores(user);
-        let deposit_amount = 1000000000;
-        let market_name = string::utf8(b"APT");
-        mock_lending::deposit<FakeAPT>(user, market_name, 1000000000);
+        let deposit_amount: u256 = 1000000000;
+        mock_lending::deposit<FakeAPT>(user, 1000000000);
     }
     
     #[test_only]
@@ -58,13 +58,14 @@ module account::mock_lending_test {
         // admin add to pool
         init_fake_pools(admin);
         mock_lending::admin_add_pool<FakeAPT>(admin);
+        // create market for APT
+        mock_lending::create_apt_market<FakeAPT>();
         coin::register<FakeAPT>(admin);
-        let market_name = string::utf8(b"APT");
         let free_coins = borrow_global_mut<FreeCoins>(admin_addr);
-        let admin_deposit_amount = 1000000000000;
-        let apt = coin::extract(&mut free_coins.apt_coin, admin_deposit_amount);
+        let admin_deposit_amount: u256 = 1000000000000;
+        let apt = coin::extract(&mut free_coins.apt_coin, (admin_deposit_amount as u64));
         coin::deposit<FakeAPT>(admin_addr, apt);
-        mock_lending::deposit<FakeAPT>(admin, market_name, admin_deposit_amount);
+        mock_lending::deposit<FakeAPT>(admin, admin_deposit_amount);
 
         // user deposit to pool
         create_fake_user(user1);
@@ -73,16 +74,10 @@ module account::mock_lending_test {
     #[test(sender = @account)]
     public fun test_market(sender: &signer) {
         mock_lending::init_module_for_tests(sender);
-        let usdt_markt_name = string::utf8(b"USDT");
-        let (usdt_deposit_apy, usdt_borrow_apy) = mock_lending::get_market_apy(usdt_markt_name);
-
-        assert!(usdt_deposit_apy == 47000, ERR_TEST);
-        assert!(usdt_borrow_apy == 81300, ERR_TEST);
-
-        let apt_market_name = string::utf8(b"APT");
-        let (apt_deposit_apy, apt_borrow_apy) = mock_lending::get_market_apy(apt_market_name);
-        assert!(apt_deposit_apy == 23800, ERR_TEST);
-        assert!(apt_borrow_apy == 50500, ERR_TEST);
+        mock_lending::create_apt_market<FakeAPT>();
+        let (apt_deposit_apy, apt_borrow_apy) = mock_lending::get_market_apy<FakeAPT>();
+        assert!(apt_deposit_apy == 23800 * BASE_12, ERR_TEST);
+        assert!(apt_borrow_apy == 50500 * BASE_12, ERR_TEST);
     }
 
     #[test(admin=@account, user1=@0x1001)]
@@ -91,8 +86,7 @@ module account::mock_lending_test {
         let user1_addr = signer::address_of(admin);
         mock_lending::init_module_for_tests(admin);
         test_init(admin, user1);
-        let market_name = string::utf8(b"APT");
-        let total_deposit = mock_lending::get_total_deposit(market_name);
+        let total_deposit = mock_lending::get_total_deposit<FakeAPT>();
         assert!(total_deposit == 1001000000000, ERR_TEST);
 
         let admin_balance = coin::balance<FakeAPT>(admin_addr);
@@ -108,9 +102,8 @@ module account::mock_lending_test {
         let user1_addr = signer::address_of(user1);
         mock_lending::init_module_for_tests(admin);
         test_init(admin, user1);
-        let market_name = string::utf8(b"APT");
-        mock_lending::withdraw<FakeAPT>(user1, market_name, 1000000000);
-        let total_deposit = mock_lending::get_total_deposit(market_name);
+        mock_lending::withdraw<FakeAPT>(user1, 1000000000);
+        let total_deposit = mock_lending::get_total_deposit<FakeAPT>();
         // print(&total_deposit);
         assert!(total_deposit == 1000000000000, ERR_TEST);
 
