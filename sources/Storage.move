@@ -2,10 +2,12 @@ module account::Storage {
     use std::signer;
     use std::timestamp;
 
-    struct PoolIndex<phantom CoinType> has key {
+    struct Index<phantom CoinType> has key {
         lastUpdateTimestamp: u64,
         poolSupplyIndex: u128,
         poolBorrowIndex: u128,
+        p2pSupplyIndex: u128,
+        p2pBorrowIndex: u128,
     }
 
     struct Market<phantom CoinType> has key {
@@ -28,26 +30,37 @@ module account::Storage {
         });
 
         /// @ducanh2706 have to fix later (get index by calling pool)
-        move_to(owner, PoolIndex<CoinType> {
+        move_to(owner, Index<CoinType> {
             lastUpdateTimestamp: timestamp::now_seconds(), 
             poolSupplyIndex: 1000000000000000000,
             poolBorrowIndex: 1000000000000000000,
+            p2pSupplyIndex: 1000000000000000000,
+            p2pBorrowIndex: 1000000000000000000,
         });
     }
 
-    public fun setPoolIndex<CoinType>(lastUpdateTimestamp: u64, poolSupplyIndex: u128, poolBorrowIndex: u128) acquires PoolIndex {
+    public fun setIndex<CoinType>(lastUpdateTimestamp: u64, poolSupplyIndex: u128, poolBorrowIndex: u128) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
-        let poolIndex = borrow_global_mut<PoolIndex<CoinType>>(@account);
+        let poolIndex = borrow_global_mut<Index<CoinType>>(@account);
         poolIndex.lastUpdateTimestamp = lastUpdateTimestamp;
         poolIndex.poolSupplyIndex = poolSupplyIndex;
         poolIndex.poolBorrowIndex = poolBorrowIndex;
+        poolIndex.p2pSupplyIndex = (poolSupplyIndex + poolBorrowIndex) / 2;
+        poolIndex.p2pBorrowIndex = (poolSupplyIndex + poolBorrowIndex) / 2;
     }
 
     #[view]
-    public fun getPoolIndex<CoinType>(): (u64, u128, u128) acquires PoolIndex {
+    public fun getPoolIndex<CoinType>(): (u128, u128) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
-        let poolIndex = borrow_global<PoolIndex<CoinType>>(@account);
-        (poolIndex.lastUpdateTimestamp, poolIndex.poolSupplyIndex, poolIndex.poolBorrowIndex)
+        let poolIndex = borrow_global<Index<CoinType>>(@account);
+        (poolIndex.poolSupplyIndex, poolIndex.poolBorrowIndex)
+    }
+
+    #[view] 
+    public fun getP2PIndex<CoinType>(): (u128, u128) acquires Index {
+        assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
+        let poolIndex = borrow_global<Index<CoinType>>(@account);
+        (poolIndex.p2pSupplyIndex, poolIndex.p2pBorrowIndex)
     }
 
     #[view]

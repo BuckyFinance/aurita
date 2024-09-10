@@ -147,15 +147,15 @@ module account::mock_lending {
     }
 
     #[view]
-    public fun get_pool_supply_index(market_name: String): u64 {
+    public fun get_pool_supply_index<CoinType>(): u128 {
         let pool_supply_index = 1;
         pool_supply_index
     }
 
     #[view]
-    public fun get_borrow_supply_index(market_name: String): u64 {
-        let borrow_supply_index = 1;
-        borrow_supply_index
+    public fun get_pool_borrow_index<CoinType>(): u128 {
+        let pool_borrow_index = 1;
+        pool_borrow_index
     }
 
     #[test_only(sender = @account)]
