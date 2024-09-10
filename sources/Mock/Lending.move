@@ -8,8 +8,7 @@ module account::mock_lending {
 
     const ERR: u64 = 1000;
     const BASE_12: u256 = 1000000000000;
-
-
+    
     friend account::mock_lending_test;
 
     struct MarketReserve<phantom CoinType> has key {
