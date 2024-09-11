@@ -1,18 +1,70 @@
 module account::Storage {
     use std::signer;
     use std::timestamp;
+    use std::simple_map::{Self, SimpleMap};
 
     struct Index<phantom CoinType> has key {
-        lastUpdateTimestamp: u64,
-        poolSupplyIndex: u128,
-        poolBorrowIndex: u128,
-        p2pSupplyIndex: u128,
-        p2pBorrowIndex: u128,
+        last_update_timestamp: u64,
+        pool_supply_index: u128,
+        pool_borrow_index: u128,
+        p2p_supply_index: u128,
+        p2p_borrow_index: u128,
     }
 
     struct Market<phantom CoinType> has key {
-        reserveFactor: u16,
-        p2pCursor: u16,
+        reserve_factor: u16,
+        p2p_cursor: u16,
+    }
+
+    struct SupplyBalance has key, store {
+        in_p2p: u256,
+        in_pool: u256,
+    }
+
+    struct BorrowBalance has key, store {
+        in_p2p: u256,
+        in_pool: u256,
+    }
+
+    struct SupplyRecord<phantom CoinType> has key {
+        supply_map: SimpleMap<address, SupplyBalance>
+    }
+
+    struct BorrowRecord<phantom CoinType> has key {
+        borrow_map: SimpleMap<address, BorrowBalance>
+    }
+
+    struct MaxGasForMatching<phantom CoinType> has key {
+        supply: u64,
+        borrow: u64,
+        withdraw: u64,
+        repay: u64,
+    }
+
+    struct Delta<phantom CoinType> has key {
+        p2p_supply_delta: u256,
+        p2p_borrow_delta: u256,
+        p2p_supply_amount: u256,
+        p2p_borrow_amount: u256,
+    }
+
+    // no need to put into storage
+    struct AssetLiquidityData has key {
+        decimals: u64,
+        token_unit: u64,
+        liquidation_threshold: u64,
+        ltv: u64,
+        underlying_price: u64,
+        collateral_eth: u64,
+        debt_eth: u64,
+    }
+
+    // no need to put into storage
+    struct LiquidityData has key {
+        collateral_eth: u64,
+        borrowable_eth: u64,
+        max_debt_eth: u64,
+        debt_eth: u64,
     }
 
     const ENOT_OWNER: u64 = 1;
@@ -20,53 +72,149 @@ module account::Storage {
     const EMARKET_NOT_EXIST: u64 = 3;
 
     /// @ducanh2706 refactor later
-    public fun create_market<CoinType>(owner: &signer, reserveFactor: u16, p2pCursor: u16) {
+    public fun create_market<CoinType>(owner: &signer, reserve_factor: u16, p2p_cursor: u16) {
         assert!(signer::address_of(owner) == @account, ENOT_OWNER);
         assert!(!exists<Market<CoinType>>(@account), EMARKET_EXIST);
         
         move_to(owner, Market<CoinType> {
-            reserveFactor,
-            p2pCursor,
+            reserve_factor,
+            p2p_cursor,
         });
 
         /// @ducanh2706 have to fix later (get index by calling pool)
         move_to(owner, Index<CoinType> {
-            lastUpdateTimestamp: timestamp::now_seconds(), 
-            poolSupplyIndex: 1000000000000000000,
-            poolBorrowIndex: 1000000000000000000,
-            p2pSupplyIndex: 1000000000000000000,
-            p2pBorrowIndex: 1000000000000000000,
+            last_update_timestamp: timestamp::now_seconds(), 
+            pool_supply_index: 1000000000000000000,
+            pool_borrow_index: 1000000000000000000,
+            p2p_supply_index: 1000000000000000000,
+            p2p_borrow_index: 1000000000000000000,
+        });
+
+        move_to(owner, SupplyRecord<CoinType> {
+            supply_map: simple_map::create()
+        });
+
+        move_to(owner, BorrowRecord<CoinType> {
+            borrow_map: simple_map::create()
+        });
+
+        move_to(owner, MaxGasForMatching<CoinType> {
+            supply: 0,
+            borrow: 0,
+            withdraw: 0,
+            repay: 0,
+        });
+
+        move_to(owner, Delta<CoinType> {
+            p2p_supply_delta: 0,
+            p2p_borrow_delta: 0,
+            p2p_supply_amount: 0,
+            p2p_borrow_amount: 0,
         });
     }
 
-    public fun setIndex<CoinType>(lastUpdateTimestamp: u64, poolSupplyIndex: u128, poolBorrowIndex: u128) acquires Index {
+    public fun setIndex<CoinType>(last_update_timestamp: u64, pool_supply_index: u128, pool_borrow_index: u128) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
-        let poolIndex = borrow_global_mut<Index<CoinType>>(@account);
-        poolIndex.lastUpdateTimestamp = lastUpdateTimestamp;
-        poolIndex.poolSupplyIndex = poolSupplyIndex;
-        poolIndex.poolBorrowIndex = poolBorrowIndex;
-        poolIndex.p2pSupplyIndex = (poolSupplyIndex + poolBorrowIndex) / 2;
-        poolIndex.p2pBorrowIndex = (poolSupplyIndex + poolBorrowIndex) / 2;
+        let pool_index = borrow_global_mut<Index<CoinType>>(@account);
+        pool_index.last_update_timestamp = last_update_timestamp;
+        pool_index.pool_supply_index = pool_supply_index;
+        pool_index.pool_borrow_index = pool_borrow_index;
+        pool_index.p2p_supply_index = (pool_supply_index + pool_borrow_index) / 2;
+        pool_index.p2p_borrow_index = (pool_supply_index + pool_borrow_index) / 2;
+    }
+
+    public fun add_supply_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires SupplyRecord {
+        let supply_balance = SupplyBalance {
+            in_p2p: in_p2p,
+            in_pool: in_pool,
+        };
+        let supply_map = &mut borrow_global_mut<SupplyRecord<CoinType>>(@account).supply_map;
+        simple_map::add(supply_map, sender_addr, supply_balance);
+    }
+
+    public fun update_supply_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires SupplyRecord {
+        let supply_map = &mut borrow_global_mut<SupplyRecord<CoinType>>(@account).supply_map;
+        let supply_balance = simple_map::borrow_mut<address, SupplyBalance>(supply_map, &sender_addr);
+        supply_balance.in_p2p = in_p2p;
+        supply_balance.in_pool = in_pool;
+    }
+
+    public fun add_borrow_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires BorrowRecord {
+        let borrow_balance = BorrowBalance {
+            in_p2p: in_p2p,
+            in_pool: in_pool,
+        };
+        let borrow_map = &mut borrow_global_mut<BorrowRecord<CoinType>>(@account).borrow_map;
+        simple_map::add(borrow_map, sender_addr, borrow_balance);
+    }
+
+    public fun update_borrow_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires BorrowRecord {
+        let borrow_map = &mut borrow_global_mut<BorrowRecord<CoinType>>(@account).borrow_map;
+        let borrow_balance = simple_map::borrow_mut<address, BorrowBalance>(borrow_map, &sender_addr);
+        borrow_balance.in_p2p = in_p2p;
+        borrow_balance.in_pool = in_pool;
+    }
+
+    public fun set_max_gas_for_matching<CoinType>(supply: u64, borrow: u64, withdraw: u64, repay: u64) acquires MaxGasForMatching {
+        let max_gas = borrow_global_mut<MaxGasForMatching<CoinType>>(@account);
+        max_gas.supply = supply;
+        max_gas.borrow = borrow;
+        max_gas.withdraw = withdraw;
+        max_gas.repay = repay;
+    }
+
+    public fun set_delta<CoinType>(supply_delta: u256, borrow_delta: u256, supply_amount: u256, borrow_amount: u256) acquires Delta {
+        let delta = borrow_global_mut<Delta<CoinType>>(@account);
+        delta.p2p_supply_delta = supply_delta;
+        delta.p2p_borrow_delta = borrow_delta;
+        delta.p2p_supply_amount = supply_amount;
+        delta.p2p_borrow_amount = borrow_amount;
     }
 
     #[view]
-    public fun getPoolIndex<CoinType>(): (u128, u128) acquires Index {
+    public fun getpool_index<CoinType>(): (u128, u128) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
-        let poolIndex = borrow_global<Index<CoinType>>(@account);
-        (poolIndex.poolSupplyIndex, poolIndex.poolBorrowIndex)
+        let pool_index = borrow_global<Index<CoinType>>(@account);
+        (pool_index.pool_supply_index, pool_index.pool_borrow_index)
     }
 
     #[view] 
     public fun getP2PIndex<CoinType>(): (u128, u128) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
-        let poolIndex = borrow_global<Index<CoinType>>(@account);
-        (poolIndex.p2pSupplyIndex, poolIndex.p2pBorrowIndex)
+        let pool_index = borrow_global<Index<CoinType>>(@account);
+        (pool_index.p2p_supply_index, pool_index.p2p_borrow_index)
     }
 
     #[view]
     public fun getMarket<CoinType>(): (u16, u16) acquires Market {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
         let market = borrow_global<Market<CoinType>>(@account);
-        (market.reserveFactor, market.p2pCursor)
+        (market.reserve_factor, market.p2p_cursor)
+    }
+
+    #[view] 
+    public fun get_supply_balance<CoinType>(sender_addr: address): (u256, u256) acquires SupplyRecord {
+        let supply_map = &borrow_global<SupplyRecord<CoinType>>(@account).supply_map;
+        let supply_balance = simple_map::borrow<address, SupplyBalance>(supply_map, &sender_addr);
+        (supply_balance.in_p2p, supply_balance.in_pool)
+    }
+
+    #[view] 
+    public fun get_borrow_balance<CoinType>(sender_addr: address): (u256, u256) acquires BorrowRecord {
+        let borrow_map = &borrow_global<BorrowRecord<CoinType>>(@account).borrow_map;
+        let borrow_balance = simple_map::borrow<address, BorrowBalance>(borrow_map, &sender_addr);
+        (borrow_balance.in_p2p, borrow_balance.in_pool)
+    }
+
+    #[view]
+    public fun get_max_gas_for_matching<CoinType>(): (u64, u64, u64, u64) acquires MaxGasForMatching {
+        let max_gas = borrow_global<MaxGasForMatching<CoinType>>(@account);
+        (max_gas.supply, max_gas.borrow, max_gas.withdraw, max_gas.repay)
+    }
+
+    #[view]
+    public fun get_delta<CoinType>(): (u256, u256, u256, u256) acquires Delta {
+        let delta = borrow_global<Delta<CoinType>>(@account);
+        (delta.p2p_supply_delta, delta.p2p_borrow_delta, delta.p2p_supply_amount, delta.p2p_borrow_amount)
     }
 }
