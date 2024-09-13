@@ -3,6 +3,7 @@ module account::Storage {
     use std::timestamp;
     use std::vector;
     use std::simple_map::{Self, SimpleMap};
+    use aptos_std::type_info::{TypeInfo, type_of};
 
     friend account::Utils;
 
@@ -17,6 +18,10 @@ module account::Storage {
     struct Market<phantom CoinType> has key {
         reserve_factor: u16,
         p2p_cursor: u16,
+    }
+
+    struct MarketCreated has key {
+        market_created_list: vector<TypeInfo>,
     }
 
     struct SuppliersInP2P<phantom CoinType> has key {
@@ -90,14 +95,27 @@ module account::Storage {
     const EMARKET_EXIST: u64 = 2;
     const EMARKET_NOT_EXIST: u64 = 3;
 
+    fun init_module(sender: &signer) {
+        move_to(sender, MarketCreated {
+            market_created_list: vector::empty(),
+        });
+    } 
+
     /// @ducanh2706 refactor later
-    public fun create_market<CoinType>(owner: &signer, reserve_factor: u16, p2p_cursor: u16) {
+    public fun create_market<CoinType>(owner: &signer, reserve_factor: u16, p2p_cursor: u16) acquires MarketCreated {
         assert!(signer::address_of(owner) == @account, ENOT_OWNER);
         assert!(!exists<Market<CoinType>>(@account), EMARKET_EXIST);
-        
+
+        let market_created_list = &mut borrow_global_mut<MarketCreated>(@account).market_created_list;
+        vector::push_back(market_created_list, type_of<CoinType>());
+
         move_to(owner, Market<CoinType> {
             reserve_factor,
             p2p_cursor,
+        });
+
+        move_to(owner, MarketCreated {
+            market_created_list: vector::empty(),
         });
 
         /// @ducanh2706 have to fix later (get index by calling pool)
@@ -161,7 +179,7 @@ module account::Storage {
 
     // @todo
     public fun update_index<CoinType>() {
-
+        
     }
 
     public fun add_supplier_in_p2p<CoinType>(supplier: address) acquires SuppliersInP2P {
@@ -230,6 +248,16 @@ module account::Storage {
         delta.p2p_borrow_delta = borrow_delta;
         delta.p2p_supply_amount = supply_amount;
         delta.p2p_borrow_amount = borrow_amount;
+    }
+
+    //=======================================================================================
+    //================================ Getter Function ======================================
+    //=======================================================================================
+
+    #[view]
+    public fun get_all_markets(): vector<TypeInfo> acquires MarketCreated{
+        let market_created_list = borrow_global<MarketCreated>(@account).market_created_list;
+        market_created_list
     }
 
     #[view]
