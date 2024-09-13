@@ -1,7 +1,10 @@
 module account::Storage {
     use std::signer;
     use std::timestamp;
+    use std::vector;
     use std::simple_map::{Self, SimpleMap};
+
+    friend account::Utils;
 
     struct Index<phantom CoinType> has key {
         last_update_timestamp: u64,
@@ -16,14 +19,30 @@ module account::Storage {
         p2p_cursor: u16,
     }
 
+    struct SuppliersInP2P<phantom CoinType> has key {
+        heap_array: vector<address>,
+    }
+
+    struct SuppliersOnPool<phantom CoinType> has key {
+        heap_array: vector<address>,
+    }
+
+    struct BorrowersInP2P<phantom CoinType> has key {
+        heap_array: vector<address>,
+    }
+
+    struct BorrowersOnPool<phantom CoinType> has key {
+        heap_array: vector<address>,
+    }
+
     struct SupplyBalance has key, store {
         in_p2p: u256,
-        in_pool: u256,
+        on_pool: u256,
     }
 
     struct BorrowBalance has key, store {
         in_p2p: u256,
-        in_pool: u256,
+        on_pool: u256,
     }
 
     struct SupplyRecord<phantom CoinType> has key {
@@ -111,9 +130,26 @@ module account::Storage {
             p2p_supply_amount: 0,
             p2p_borrow_amount: 0,
         });
+
+        move_to(owner, SuppliersInP2P<CoinType> {
+            heap_array: vector::empty(),
+        });
+
+         move_to(owner, SuppliersOnPool<CoinType> {
+            heap_array: vector::empty(),
+        });
+
+         move_to(owner, BorrowersInP2P<CoinType> {
+            heap_array: vector::empty(),
+        });
+
+         move_to(owner, BorrowersOnPool<CoinType> {
+            heap_array: vector::empty(),
+        });
+
     }
 
-    public fun setIndex<CoinType>(last_update_timestamp: u64, pool_supply_index: u128, pool_borrow_index: u128) acquires Index {
+    public fun set_index<CoinType>(last_update_timestamp: u64, pool_supply_index: u128, pool_borrow_index: u128) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
         let pool_index = borrow_global_mut<Index<CoinType>>(@account);
         pool_index.last_update_timestamp = last_update_timestamp;
@@ -123,36 +159,61 @@ module account::Storage {
         pool_index.p2p_borrow_index = (pool_supply_index + pool_borrow_index) / 2;
     }
 
-    public fun add_supply_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires SupplyRecord {
+    // @todo
+    public fun update_index<CoinType>() {
+
+    }
+
+    public fun add_supplier_in_p2p<CoinType>(supplier: address) acquires SuppliersInP2P {
+        let heap_array = &mut borrow_global_mut<SuppliersInP2P<CoinType>>(@account).heap_array;
+        vector::push_back(heap_array, supplier);
+    }
+
+    public fun add_supplier_on_pool<CoinType>(supplier: address) acquires SuppliersOnPool {
+        let heap_array = &mut borrow_global_mut<SuppliersOnPool<CoinType>>(@account).heap_array;
+        vector::push_back(heap_array, supplier);
+    }
+
+    public fun add_borrower_in_p2p<CoinType>(supplier: address) acquires BorrowersInP2P {
+        let heap_array = &mut borrow_global_mut<BorrowersInP2P<CoinType>>(@account).heap_array;
+        vector::push_back(heap_array, supplier);
+    }
+
+    public fun add_borrower_on_pool<CoinType>(supplier: address) acquires BorrowersOnPool {
+        let heap_array = &mut borrow_global_mut<BorrowersOnPool<CoinType>>(@account).heap_array;
+        vector::push_back(heap_array, supplier);
+    }
+
+    public fun add_supply_record<CoinType>(sender_addr: address, in_p2p: u256, on_pool: u256) acquires SupplyRecord {
         let supply_balance = SupplyBalance {
             in_p2p: in_p2p,
-            in_pool: in_pool,
+            on_pool: on_pool,
         };
         let supply_map = &mut borrow_global_mut<SupplyRecord<CoinType>>(@account).supply_map;
         simple_map::add(supply_map, sender_addr, supply_balance);
     }
 
-    public fun update_supply_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires SupplyRecord {
+    public fun update_supply_record<CoinType>(sender_addr: address, in_p2p: u256, on_pool: u256) acquires SupplyRecord {
         let supply_map = &mut borrow_global_mut<SupplyRecord<CoinType>>(@account).supply_map;
         let supply_balance = simple_map::borrow_mut<address, SupplyBalance>(supply_map, &sender_addr);
         supply_balance.in_p2p = in_p2p;
-        supply_balance.in_pool = in_pool;
+        supply_balance.on_pool = on_pool;
     }
 
-    public fun add_borrow_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires BorrowRecord {
+    public fun add_borrow_record<CoinType>(sender_addr: address, in_p2p: u256, on_pool: u256) acquires BorrowRecord {
         let borrow_balance = BorrowBalance {
             in_p2p: in_p2p,
-            in_pool: in_pool,
+            on_pool: on_pool,
         };
         let borrow_map = &mut borrow_global_mut<BorrowRecord<CoinType>>(@account).borrow_map;
         simple_map::add(borrow_map, sender_addr, borrow_balance);
     }
 
-    public fun update_borrow_record<CoinType>(sender_addr: address, in_p2p: u256, in_pool: u256) acquires BorrowRecord {
+    public fun update_borrow_record<CoinType>(sender_addr: address, in_p2p: u256, on_pool: u256) acquires BorrowRecord {
         let borrow_map = &mut borrow_global_mut<BorrowRecord<CoinType>>(@account).borrow_map;
         let borrow_balance = simple_map::borrow_mut<address, BorrowBalance>(borrow_map, &sender_addr);
         borrow_balance.in_p2p = in_p2p;
-        borrow_balance.in_pool = in_pool;
+        borrow_balance.on_pool = on_pool;
     }
 
     public fun set_max_gas_for_matching<CoinType>(supply: u64, borrow: u64, withdraw: u64, repay: u64) acquires MaxGasForMatching {
@@ -192,18 +253,42 @@ module account::Storage {
         (market.reserve_factor, market.p2p_cursor)
     }
 
+    #[view]
+    public fun get_head_supplier_in_p2p<CoinType>(): address acquires SuppliersInP2P {
+        let heap_array = &borrow_global<SuppliersInP2P<CoinType>>(@account).heap_array;
+        *vector::borrow(heap_array, 0)
+    }
+
+    #[view]
+    public fun get_head_supplier_on_pool<CoinType>(): address acquires SuppliersOnPool {
+        let heap_array = &borrow_global<SuppliersOnPool<CoinType>>(@account).heap_array;
+        *vector::borrow(heap_array, 0)
+    }
+
+    #[view]
+    public fun get_head_borrower_in_p2p<CoinType>(): address acquires BorrowersInP2P {
+        let heap_array = &borrow_global<BorrowersInP2P<CoinType>>(@account).heap_array;
+        *vector::borrow(heap_array, 0)
+    }
+
+    #[view]
+    public fun get_head_borrower_on_pool<CoinType>(): address acquires BorrowersOnPool {
+        let heap_array = &borrow_global<BorrowersOnPool<CoinType>>(@account).heap_array;
+        *vector::borrow(heap_array, 0)
+    }
+
     #[view] 
     public fun get_supply_balance<CoinType>(sender_addr: address): (u256, u256) acquires SupplyRecord {
         let supply_map = &borrow_global<SupplyRecord<CoinType>>(@account).supply_map;
         let supply_balance = simple_map::borrow<address, SupplyBalance>(supply_map, &sender_addr);
-        (supply_balance.in_p2p, supply_balance.in_pool)
+        (supply_balance.in_p2p, supply_balance.on_pool)
     }
 
     #[view] 
     public fun get_borrow_balance<CoinType>(sender_addr: address): (u256, u256) acquires BorrowRecord {
         let borrow_map = &borrow_global<BorrowRecord<CoinType>>(@account).borrow_map;
         let borrow_balance = simple_map::borrow<address, BorrowBalance>(borrow_map, &sender_addr);
-        (borrow_balance.in_p2p, borrow_balance.in_pool)
+        (borrow_balance.in_p2p, borrow_balance.on_pool)
     }
 
     #[view]

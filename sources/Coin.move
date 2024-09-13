@@ -5,6 +5,8 @@ module account::coin {
     use aptos_framework::account;
     use aptos_framework::coin::{Coin, Self, MintCapability, BurnCapability};
 
+    friend account::Utils;
+
     struct USDC has store {}
 
     struct USDT has store {}
