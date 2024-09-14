@@ -1,18 +1,21 @@
-module account::Storage {
+module account::storage {
     use std::signer;
     use std::timestamp;
     use std::vector;
     use std::simple_map::{Self, SimpleMap};
     use aptos_std::type_info::{TypeInfo, type_of};
 
-    friend account::Utils;
+    const HEALTH_FACTOR_LIQUIDATION_THRESHOLD: u256 = 1000000000000000000;
+
+    friend account::utils;
+    friend account::exit_positions_manager;
 
     struct Index<phantom CoinType> has key {
         last_update_timestamp: u64,
-        pool_supply_index: u128,
-        pool_borrow_index: u128,
-        p2p_supply_index: u128,
-        p2p_borrow_index: u128,
+        pool_supply_index: u256,
+        pool_borrow_index: u256,
+        p2p_supply_index: u256,
+        p2p_borrow_index: u256,
     }
 
     struct Market<phantom CoinType> has key {
@@ -167,7 +170,7 @@ module account::Storage {
 
     }
 
-    public fun set_index<CoinType>(last_update_timestamp: u64, pool_supply_index: u128, pool_borrow_index: u128) acquires Index {
+    public fun set_index<CoinType>(last_update_timestamp: u64, pool_supply_index: u256, pool_borrow_index: u256) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
         let pool_index = borrow_global_mut<Index<CoinType>>(@account);
         pool_index.last_update_timestamp = last_update_timestamp;
@@ -261,14 +264,14 @@ module account::Storage {
     }
 
     #[view]
-    public fun getpool_index<CoinType>(): (u128, u128) acquires Index {
+    public fun get_pool_index<CoinType>(): (u256, u256) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
         let pool_index = borrow_global<Index<CoinType>>(@account);
         (pool_index.pool_supply_index, pool_index.pool_borrow_index)
     }
 
     #[view] 
-    public fun getP2PIndex<CoinType>(): (u128, u128) acquires Index {
+    public fun getP2PIndex<CoinType>(): (u256, u256) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
         let pool_index = borrow_global<Index<CoinType>>(@account);
         (pool_index.p2p_supply_index, pool_index.p2p_borrow_index)
@@ -329,5 +332,16 @@ module account::Storage {
     public fun get_delta<CoinType>(): (u256, u256, u256, u256) acquires Delta {
         let delta = borrow_global<Delta<CoinType>>(@account);
         (delta.p2p_supply_delta, delta.p2p_borrow_delta, delta.p2p_supply_amount, delta.p2p_borrow_amount)
+    }
+
+    #[view]
+    public fun get_health_factor_liquidation_threshold(): u256 {
+        HEALTH_FACTOR_LIQUIDATION_THRESHOLD
+    }
+
+    #[view]
+    public fun max_u256(): u256 {
+        let max_u256: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
+        max_u256
     }
 }
