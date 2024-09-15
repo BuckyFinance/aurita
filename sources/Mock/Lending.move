@@ -10,6 +10,7 @@ module account::mock_lending {
     const BASE_12: u256 = 1000000000000;
     
     friend account::mock_lending_test;
+    friend account::Utils;
 
     struct MarketReserve<phantom CoinType> has key {
         reserve: Coin<CoinType>,
@@ -135,6 +136,13 @@ module account::mock_lending {
         let coin_type = type_of<CoinType>();
         let market = simple_map::borrow(market_map, &coin_type);
         (market.deposit_apy, market.borrow_apy)
+    }
+
+    #[view]
+    public fun get_market_configuration(): (u256, u256) {
+        let ltv = 800000 * BASE_12;
+        let liquidation_threshold = 900000 * BASE_12;
+        (ltv, liquidation_threshold)
     }
 
     #[view]

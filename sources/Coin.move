@@ -5,6 +5,9 @@ module account::coin {
     use aptos_framework::account;
     use aptos_framework::coin::{Coin, Self, MintCapability, BurnCapability};
 
+    friend account::utils;
+    friend account::exit_positions_manager;
+
     struct USDC has store {}
 
     struct USDT has store {}
