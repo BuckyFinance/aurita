@@ -266,19 +266,19 @@ module account::storage {
     #[view]
     public fun get_pool_index<CoinType>(): (u256, u256) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
-        let pool_index = borrow_global<Index<CoinType>>(@account);
-        (pool_index.pool_supply_index, pool_index.pool_borrow_index)
+        let index = borrow_global<Index<CoinType>>(@account);
+        (index.pool_supply_index, index.pool_borrow_index)
     }
 
     #[view] 
-    public fun getP2PIndex<CoinType>(): (u256, u256) acquires Index {
+    public fun get_p2p_index<CoinType>(): (u256, u256) acquires Index {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
-        let pool_index = borrow_global<Index<CoinType>>(@account);
-        (pool_index.p2p_supply_index, pool_index.p2p_borrow_index)
+        let index = borrow_global<Index<CoinType>>(@account);
+        (index.p2p_supply_index, index.p2p_borrow_index)
     }
 
     #[view]
-    public fun getMarket<CoinType>(): (u16, u16) acquires Market {
+    public fun get_market<CoinType>(): (u16, u16) acquires Market {
         assert!(exists<Market<CoinType>>(@account), EMARKET_NOT_EXIST);
         let market = borrow_global<Market<CoinType>>(@account);
         (market.reserve_factor, market.p2p_cursor)

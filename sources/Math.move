@@ -6,27 +6,27 @@ module account::math {
     const HALF_RAY: u256 = 1000000000000000000000000000 / 2;
     const ERR_DIVSION_BY_ZERO: u64 = 1000;
 
-    public fun wadMul(a: u256, b: u256): u256 {
+    public fun wad_mul(a: u256, b: u256): u256 {
         if(a == 0 || b == 0) {
             return 0;
         };
         (a * b + HALF_WAD) / WAD
     }
 
-    public fun wadDiv(a: u256, b: u256): u256 {
+    public fun wad_div(a: u256, b: u256): u256 {
         assert!(b == 0, ERR_DIVSION_BY_ZERO);
         let halfB = b / 2;
         (a * WAD + halfB) / b
     }
 
-    public fun rayMul(a: u256, b: u256): u256 {
+    public fun ray_mul(a: u256, b: u256): u256 {
         if(a == 0 || b == 0) {
             return 0;
         };
         (a * b + HALF_RAY) / RAY
     }
 
-    public fun rayDiv(a: u256, b: u256): u256 {
+    public fun ray_div(a: u256, b: u256): u256 {
         assert!(b == 0, ERR_DIVSION_BY_ZERO);
         let halfB = b / 2;
         (a * RAY + halfB) / b 

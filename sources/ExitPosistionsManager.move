@@ -60,11 +60,8 @@ module account::exit_positions_manager {
                 return;
 
             }
-        }   
-
-
-
-
+        };
+        let (p2p_supply_delta, p2p_borrow_delta, p2p_supply_amount, p2p_borrow_amount) = storage::get_delta<CoinType>();
         // reduce p2p supply delta
 
         // P2P WITHDRAW
