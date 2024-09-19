@@ -8,8 +8,6 @@ module account::utils {
     const BASE_12: u256 = 1000000000000; // 10^12
     const TOKEN_UNIT: u256 = 1000000000000000000; // 10^18
     
-    friend account::exit_positions_manager;
-
     struct LiquidityData has key {
         total_collateral: u256,
         total_borrowable: u256,

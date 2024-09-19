@@ -10,7 +10,7 @@ module account::mock_lending {
     const BASE_12: u256 = 1000000000000;
     
     friend account::mock_lending_test;
-    friend account::Utils;
+    friend account::utils;
 
     struct MarketReserve<phantom CoinType> has key {
         reserve: Coin<CoinType>,
@@ -155,13 +155,13 @@ module account::mock_lending {
     }
 
     #[view]
-    public fun get_pool_supply_index<CoinType>(): u128 {
+    public fun get_pool_supply_index<CoinType>(): u256 {
         let pool_supply_index = 1;
         pool_supply_index
     }
 
     #[view]
-    public fun get_pool_borrow_index<CoinType>(): u128 {
+    public fun get_pool_borrow_index<CoinType>(): u256 {
         let pool_borrow_index = 1;
         pool_borrow_index
     }

@@ -1,5 +1,4 @@
 module account::math {
-    friend account::exit_positions_manager;
     const WAD: u256 = 1000000000000000000;
     const HALF_WAD: u256 = 1000000000000000000 / 2;
     const RAY: u256 = 1000000000000000000000000000;

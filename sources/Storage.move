@@ -8,7 +8,6 @@ module account::storage {
     const HEALTH_FACTOR_LIQUIDATION_THRESHOLD: u256 = 1000000000000000000;
 
     friend account::utils;
-    friend account::exit_positions_manager;
 
     struct Index<phantom CoinType> has key {
         last_update_timestamp: u64,
@@ -287,6 +286,10 @@ module account::storage {
     #[view]
     public fun get_head_supplier_in_p2p<CoinType>(): address acquires SuppliersInP2P {
         let heap_array = &borrow_global<SuppliersInP2P<CoinType>>(@account).heap_array;
+        let head_array_length = vector::length(heap_array);
+        if(head_array_length == 0) {
+            return @0x0;
+        };
         *vector::borrow(heap_array, 0)
     }
 

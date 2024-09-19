@@ -2,8 +2,6 @@ module account::PosUtils {
     use account::coin::{USDC, USDT, WBTC, STAPT};
     use account::mock_lending::{Self};
 
-    friend account::exit_positions_manager;
-
     public fun deposit<CoinType>(user: &signer, amount: u256) {
         mock_lending::deposit<CoinType>(user, amount);
     }
