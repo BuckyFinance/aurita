@@ -69,7 +69,7 @@ module account::mock_lending {
         create_market(coin_type, 22300 * BASE_12, 49400 * BASE_12);
     }
 
-    public entry fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
+    public fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
         let sender_addr = signer::address_of(sender);
         let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
         let coin_type = type_of<CoinType>();
@@ -82,7 +82,7 @@ module account::mock_lending {
         coin::merge(reserve, coin);
     }
 
-    public entry fun withdraw<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
+    public fun withdraw<CoinType>(sender: &signer, amount: u256): Coin<CoinType> acquires MarketRecord, MarketReserve {
         let sender_addr = signer::address_of(sender);
         let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
         let coin_type = type_of<CoinType>();
@@ -93,14 +93,15 @@ module account::mock_lending {
         // deposit to user wallet
         let reserve = &mut borrow_global_mut<MarketReserve<CoinType>>(@account).reserve;
         let coin = coin::extract(reserve, (amount as u64));
-        coin::deposit(sender_addr, coin);
+        coin
     }
 
-    public entry fun borrow<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
-        withdraw<CoinType>(sender, amount);
+    public fun borrow<CoinType>(sender: &signer, amount: u256): Coin<CoinType> acquires MarketRecord, MarketReserve {
+        let coin = withdraw<CoinType>(sender, amount);
+        coin
     }
 
-    public entry fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve{
+    public fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve{
         deposit<CoinType>(sender, amount);
     }
 
