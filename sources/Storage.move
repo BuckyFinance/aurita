@@ -17,7 +17,7 @@ module account::storage {
         p2p_borrow_index: u256,
     }
 
-    struct Market<phantom CoinType> has key {
+    struct Market<phantom CoinType> has key, drop {
         reserve_factor: u16,
         p2p_cursor: u16,
     }
@@ -182,6 +182,24 @@ module account::storage {
     // @todo
     public fun update_index<CoinType>() {
         
+    }
+
+    // @ducanh2706 refactor later
+    public fun remove_supplier_in_p2p<CoinType>(user: address) acquires SuppliersInP2P {
+        let heap_array = &mut borrow_global_mut<SuppliersInP2P<CoinType>>(@account).heap_array;
+        if (vector::length(heap_array) == 0) {
+            return;
+        };
+        vector::remove(heap_array, 0);
+    }
+
+    // @ducanh2706 refactor later
+    public fun remove_borrower_in_p2p<CoinType>(user: address) acquires BorrowersInP2P {
+        let heap_array = &mut borrow_global_mut<BorrowersInP2P<CoinType>>(@account).heap_array;
+        if (vector::length(heap_array) == 0) {
+            return;
+        };
+        vector::remove(heap_array, 0);
     }
 
     public fun add_supplier_in_p2p<CoinType>(supplier: address) acquires SuppliersInP2P {

@@ -1,4 +1,4 @@
-module account::Interest_rate_manager {
+module account::interest_rate_manager {
     use account::mock_lending;
     use account::storage;
     use std::timestamp;
