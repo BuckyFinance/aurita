@@ -1,4 +1,4 @@
-module account::PosUtils {
+module account::pos_utils {
     use account::coin::{USDC, USDT, WBTC, STAPT};
     use aptos_framework::coin::{Self, Coin};
     use account::mock_lending::{Self};
