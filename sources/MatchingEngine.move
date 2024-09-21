@@ -30,9 +30,9 @@ module account::matching_engine {
         pool_index: u256,
     }
     
-    public fun match_supplier<CoinType>(user: &signer, amount: u256, max_iteration: u256): u256 {
-        if (max_iteration == 0) {
-            return 0;
+    public fun match_supplier<CoinType>(user: &signer, amount: u256, iterations: u256): (u256, u256) {
+        if (iterations == 0) {
+            return (0, 0);
         };
 
         let vars: MatchingVars = MatchingVars {
@@ -52,8 +52,8 @@ module account::matching_engine {
         let remaining_amount: u256 = amount;
 
 
-        while (max_iteration > 0 && remaining_amount > 0 && matched_supplier != @0x0) {
-            max_iteration = max_iteration - 1;
+        while (iterations > 0 && remaining_amount > 0 && matched_supplier != @0x0) {
+            iterations = iterations - 1;
 
             let (p2p_supply_balance, pool_supply_balance) = storage::get_supply_balance<CoinType>(matched_supplier);
 
@@ -70,12 +70,12 @@ module account::matching_engine {
             matched_supplier = storage::get_head_supplier_on_pool<CoinType>();
         };
 
-        amount - remaining_amount
+        (amount - remaining_amount, iterations)
     }
 
-    public fun unmatch_supplier<CoinType>(user: &signer, amount: u256, max_iteration: u256): u256 {
-        if (max_iteration == 0) {
-            return 0;
+    public fun unmatch_supplier<CoinType>(user: &signer, amount: u256, iterations: u256): (u256, u256) {
+        if (iterations == 0) {
+            return (0, 0);
         };
 
         let vars: UnmatchingVars = UnmatchingVars {
@@ -94,8 +94,8 @@ module account::matching_engine {
         let matched_supplier: address = storage::get_head_supplier_in_p2p<CoinType>();
         let remaining_amount: u256 = amount;
 
-        while (max_iteration > 0 && remaining_amount > 0 && matched_supplier != @0x0) {
-            max_iteration = max_iteration - 1;
+        while (iterations > 0 && remaining_amount > 0 && matched_supplier != @0x0) {
+            iterations = iterations - 1;
 
             let (p2p_supply_balance, pool_supply_balance) = storage::get_supply_balance<CoinType>(matched_supplier);
 
@@ -112,12 +112,12 @@ module account::matching_engine {
             matched_supplier = storage::get_head_supplier_in_p2p<CoinType>();
         };
 
-        amount - remaining_amount
+        (amount - remaining_amount, iterations)
     }
 
-    public fun unmatch_borrower<CoinType>(user: &signer, amount: u256, max_iteration: u256): u256 {
-        if (max_iteration == 0) {
-            return 0;
+    public fun unmatch_borrower<CoinType>(user: &signer, amount: u256, iterations: u256): (u256, u256) {
+        if (iterations == 0) {
+            return (0, 0);
         };
 
         let vars: UnmatchingVars = UnmatchingVars {
@@ -137,8 +137,8 @@ module account::matching_engine {
 
         let remaining_amount: u256 = amount;
 
-        while (max_iteration > 0 && remaining_amount > 0 && matched_borrower != @0x0) {
-            max_iteration = max_iteration - 1;
+        while (iterations > 0 && remaining_amount > 0 && matched_borrower != @0x0) {
+            iterations = iterations - 1;
 
             let (p2p_borrow_balance, pool_borrow_balance) = storage::get_borrow_balance<CoinType>(matched_borrower);
 
@@ -155,12 +155,12 @@ module account::matching_engine {
             matched_borrower = storage::get_head_borrower_in_p2p<CoinType>();
         };
 
-        amount - remaining_amount
+        (amount - remaining_amount, iterations)
     }
 
-    public fun match_borrower<CoinType>(user: &signer, amount: u256, max_iteration: u256) : u256 {
-        if (max_iteration == 0) {
-            return 0;
+    public fun match_borrower<CoinType>(user: &signer, amount: u256, iterations: u256) : (u256, u256) {
+        if (iterations == 0) {
+            return (0, 0);
         };
 
         let vars: MatchingVars = MatchingVars {
@@ -179,8 +179,8 @@ module account::matching_engine {
         vars.p2p_index = p2p_index_borrow;
         vars.pool_index = pool_index_borrow;
 
-        while (max_iteration > 0 && remaining_amount > 0 && matched_borrower != @0x0) {
-            max_iteration = max_iteration - 1;
+        while (iterations > 0 && remaining_amount > 0 && matched_borrower != @0x0) {
+            iterations = iterations - 1;
 
             let (p2p_borrow_balance, pool_borrow_balance) = storage::get_borrow_balance<CoinType>(matched_borrower);
 
@@ -197,7 +197,7 @@ module account::matching_engine {
             matched_borrower = storage::get_head_borrower_on_pool<CoinType>();
         };
 
-        amount - remaining_amount
+        (amount - remaining_amount, iterations)
     }
 
     // refactor later
