@@ -5,6 +5,7 @@
 //     use account::storage;
 //     use account::PosUtils;
 //     use account::coin;
+//     use account::matching_engine;
 
 //     public fun withdraw_logic<CoinType>(
 //         sender: &signer,
@@ -30,11 +31,11 @@
 //         sender: &signer, 
 //         amount: u256,
 //         receiver: address,
-//         max_gas_for_matching: u256
+//         max_iteration: u256,
 //     ) {
 //         let sender_addr = signer::address_of(sender);
 //         let remaining_to_withdraw = amount;
-//         let remaining_gas_for_matching = max_gas_for_matching;
+//         let remaining_iteration_for_matching = max_iteration;
 //         let (supplier_balance_in_p2p, supplier_balance_on_pool) = storage::get_supply_balance<CoinType>(sender_addr);
 //         let (pool_supply_index, pool_borrow_index) = storage::get_pool_index<CoinType>();
 //         let to_withdraw = 0;
@@ -95,11 +96,11 @@
 //         let head_supplier_on_pool = storage::get_head_supplier_on_pool<CoinType>();
 //         if(remaining_to_withdraw > 0 && head_supplier_on_pool != @0x0) {
 //             // @todo: rematch remaining supplier
-//             // let (matched, gas_consumed_in_matching) = match_supplier(); 
-//             if(remaining_gas_for_matching <= gas_consumed_in_matching) {
-//                 remaining_gas_for_matching = 0;
+//             let (matched, iteration_consumed_in_matching) = matching_engine::match_supplier<CoinType>(sender, remaining_to_withdraw, max_iteration); 
+//             if(remaining_iteration_for_matching <= iteration_consumed_in_matching) {
+//                 remaining_iteration_for_matching = 0;
 //             } else {
-//                 remaining_gas_for_matching = remaining_gas_for_matching - gas_consumed_in_matching;
+//                 remaining_iteration_for_matching = remaining_iteration_for_matching - iteration_consumed_in_matching;
 //             };
 
 //             remaining_to_withdraw = remaining_to_withdraw - matched;
@@ -112,12 +113,25 @@
 
 //         // breaking withdraw -> demote borrower
 //         if(remaining_to_withdraw > 0) {
-//             // @todo: unmatched remaining supplier who not matched p2p to pool
-//             // let unmatched = match_supplier(); 
+//             let (unmatched, iterations) = matching_engine::unmatch_borrower<CoinType>(sender, remaining_to_withdraw, remaining_iteration_for_matching); 
 //             if(unmatched < remaining_to_withdraw) {
-                
-//             }
-//         }
+//                 p2p_borrow_delta = p2p_borrow_delta + math::ray_div(remaining_to_withdraw - unmatched, pool_borrow_index);
+//             };
+
+//             p2p_supply_amount = p2p_supply_amount - math::min(
+//                 p2p_supply_amount,
+//                 math::ray_div(remaining_to_withdraw, p2p_supply_index);
+//             );
+
+//             p2p_borrow_amount = p2p_borrow_amount - math::min(
+//                 p2p_borrow_amount,
+//                 math::ray_div(remaining_to_withdraw, p2p_borrow_index);
+//             );
+
+//             PosUtils::borrow<CoinType>(remaining_to_withdraw);
+//         };
+
+        
 //     }
 
 //     fun unsafe_repay_logic() {
