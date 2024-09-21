@@ -5,6 +5,7 @@ module account::entry_positions_manager {
     use account::math;
     use account::matching_engine;
     use account::pos_utils;
+    use account::utils;
 
     use std::coin::{Coin, Self};
 
@@ -155,6 +156,7 @@ module account::entry_positions_manager {
     }
 
     fun borrow_allowed<CoinType>(user: address, borrow_amount: u256): bool {
-        true
+        let (total_collateral, total_borrowable, total_max_debt, total_debt) = utils::get_liquidity_data<CoinType>(user, 0, borrow_amount);
+        (total_debt <= total_borrowable)
     }
 }
