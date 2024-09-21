@@ -65,7 +65,7 @@ module account::matching_engine {
         
             storage::update_supply_record<CoinType>(matched_supplier, p2p_supply_balance, pool_supply_balance);
 
-            update_supplier_in_DS<CoinType>(matched_supplier, vars.to_match);
+            update_supplier_in_DS<CoinType>(matched_supplier);
 
             matched_supplier = storage::get_head_supplier_on_pool<CoinType>();
         };
@@ -107,7 +107,7 @@ module account::matching_engine {
 
             storage::update_supply_record<CoinType>(matched_supplier, p2p_supply_balance, pool_supply_balance);
 
-            update_supplier_in_DS<CoinType>(matched_supplier, vars.to_unmatch);
+            update_supplier_in_DS<CoinType>(matched_supplier);
 
             matched_supplier = storage::get_head_supplier_in_p2p<CoinType>();
         };
@@ -150,7 +150,7 @@ module account::matching_engine {
 
             storage::update_borrow_record<CoinType>(matched_borrower, p2p_borrow_balance, pool_borrow_balance);
 
-            update_borrower_in_DS<CoinType>(matched_borrower, vars.to_unmatch);
+            update_borrower_in_DS<CoinType>(matched_borrower);
 
             matched_borrower = storage::get_head_borrower_in_p2p<CoinType>();
         };
@@ -192,7 +192,7 @@ module account::matching_engine {
 
             storage::update_borrow_record<CoinType>(matched_borrower, p2p_borrow_balance, pool_borrow_balance);
 
-            update_borrower_in_DS<CoinType>(matched_borrower, vars.to_match);
+            update_borrower_in_DS<CoinType>(matched_borrower);
 
             matched_borrower = storage::get_head_borrower_on_pool<CoinType>();
         };
@@ -201,13 +201,13 @@ module account::matching_engine {
     }
 
     // refactor later
-    public fun update_supplier_in_DS<CoinType>(user: address, amount: u256) {
+    public fun update_supplier_in_DS<CoinType>(user: address) {
         // storage::remove_supplier_on_pool<CoinType>(user);
         // storage::add_supplier_on_pool<CoinType>(user);
     }
 
     // refactor later
-    public fun update_borrower_in_DS<CoinType>(user: address, amount: u256) {
+    public fun update_borrower_in_DS<CoinType>(user: address) {
         // storage::remove_borrower_on_pool<CoinType>(user);
         // storage::add_borrower_on_pool<CoinType>(user);
     }
