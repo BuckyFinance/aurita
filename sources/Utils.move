@@ -4,7 +4,7 @@ module account::utils {
     use std::vector;
     use aptos_std::type_info::{TypeInfo, type_of};
     use account::mock_lending;
-    use account::Interest_rate_manager;
+    use account::interest_rate_manager;
     
     const BASE_12: u256 = 1000000000000; // 10^12
     const TOKEN_UNIT: u256 = 1000000000000000000; // 10^18
@@ -93,7 +93,7 @@ module account::utils {
     ) acquires LiquidityData {
         let underlying_price = get_asset_price<CoinType>();
 
-        Interest_rate_manager::update_indexes<CoinType>();
+        interest_rate_manager::update_indexes<CoinType>();
         
         let (ltv, liquidation_threshold) = mock_lending::get_market_configuration();
         let debt = calculate_debt_value<CoinType>(user_addr, underlying_price);
