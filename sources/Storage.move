@@ -4,10 +4,19 @@ module account::storage {
     use std::vector;
     use std::simple_map::{Self, SimpleMap};
     use aptos_std::type_info::{TypeInfo, type_of};
+    use account::heap_ds::{HeapArray, Self};
 
     const HEALTH_FACTOR_LIQUIDATION_THRESHOLD: u256 = 1000000000000000000;
+    const INITIAL_HEAP_SIZE: u256 = 100;
 
     friend account::utils;
+
+    struct ProtocolHeap<phantom CoinType> has key {
+        suppliers_in_p2p: HeapArray,
+        suppliers_on_pool: HeapArray,
+        borrowers_in_p2p: HeapArray,
+        borrowers_on_pool: HeapArray,
+    }
 
     struct Index<phantom CoinType> has key {
         last_update_timestamp: u64,
@@ -24,22 +33,6 @@ module account::storage {
 
     struct MarketCreated has key {
         market_created_list: vector<TypeInfo>,
-    }
-
-    struct SuppliersInP2P<phantom CoinType> has key {
-        heap_array: vector<address>,
-    }
-
-    struct SuppliersOnPool<phantom CoinType> has key {
-        heap_array: vector<address>,
-    }
-
-    struct BorrowersInP2P<phantom CoinType> has key {
-        heap_array: vector<address>,
-    }
-
-    struct BorrowersOnPool<phantom CoinType> has key {
-        heap_array: vector<address>,
     }
 
     struct SupplyBalance has key, store {
@@ -151,22 +144,12 @@ module account::storage {
             p2p_borrow_amount: 0,
         });
 
-        move_to(owner, SuppliersInP2P<CoinType> {
-            heap_array: vector::empty(),
+        move_to(owner, ProtocolHeap<CoinType> {
+            suppliers_in_p2p: heap_ds::create_new_heap(INITIAL_HEAP_SIZE),
+            suppliers_on_pool: heap_ds::create_new_heap(INITIAL_HEAP_SIZE),
+            borrowers_in_p2p: heap_ds::create_new_heap(INITIAL_HEAP_SIZE),
+            borrowers_on_pool: heap_ds::create_new_heap(INITIAL_HEAP_SIZE),
         });
-
-         move_to(owner, SuppliersOnPool<CoinType> {
-            heap_array: vector::empty(),
-        });
-
-         move_to(owner, BorrowersInP2P<CoinType> {
-            heap_array: vector::empty(),
-        });
-
-         move_to(owner, BorrowersOnPool<CoinType> {
-            heap_array: vector::empty(),
-        });
-
     }
 
     public fun set_index<CoinType>(last_update_timestamp: u64, pool_supply_index: u256, pool_borrow_index: u256) acquires Index {
@@ -184,42 +167,28 @@ module account::storage {
         
     }
 
-    // @ducanh2706 refactor later
-    public fun remove_supplier_in_p2p<CoinType>(user: address) acquires SuppliersInP2P {
-        let heap_array = &mut borrow_global_mut<SuppliersInP2P<CoinType>>(@account).heap_array;
-        if (vector::length(heap_array) == 0) {
-            return;
-        };
-        vector::remove(heap_array, 0);
+    public fun update_suppliers_in_p2p<CoinType>(user: address, new_value: u256) acquires ProtocolHeap {
+        let supplier_heap = borrow_global_mut<ProtocolHeap<CoinType>>(@account);
+        let former_value = heap_ds::get_account_value(&supplier_heap.suppliers_in_p2p, user);
+        heap_ds::update(&mut supplier_heap.suppliers_in_p2p, user, former_value, new_value, INITIAL_HEAP_SIZE);
     }
 
-    // @ducanh2706 refactor later
-    public fun remove_borrower_in_p2p<CoinType>(user: address) acquires BorrowersInP2P {
-        let heap_array = &mut borrow_global_mut<BorrowersInP2P<CoinType>>(@account).heap_array;
-        if (vector::length(heap_array) == 0) {
-            return;
-        };
-        vector::remove(heap_array, 0);
+    public fun update_suppliers_on_pool<CoinType>(user: address, new_value: u256) acquires ProtocolHeap {
+        let supplier_heap = borrow_global_mut<ProtocolHeap<CoinType>>(@account);
+        let former_value = heap_ds::get_account_value(&supplier_heap.suppliers_on_pool, user);
+        heap_ds::update(&mut supplier_heap.suppliers_on_pool, user, former_value, new_value, INITIAL_HEAP_SIZE);
     }
 
-    public fun add_supplier_in_p2p<CoinType>(supplier: address) acquires SuppliersInP2P {
-        let heap_array = &mut borrow_global_mut<SuppliersInP2P<CoinType>>(@account).heap_array;
-        vector::push_back(heap_array, supplier);
+    public fun update_borrowers_in_p2p<CoinType>(user: address, new_value: u256) acquires ProtocolHeap {
+        let borrower_heap = borrow_global_mut<ProtocolHeap<CoinType>>(@account);
+        let former_value = heap_ds::get_account_value(&borrower_heap.borrowers_in_p2p, user);
+        heap_ds::update(&mut borrower_heap.borrowers_in_p2p, user, former_value, new_value, INITIAL_HEAP_SIZE);
     }
 
-    public fun add_supplier_on_pool<CoinType>(supplier: address) acquires SuppliersOnPool {
-        let heap_array = &mut borrow_global_mut<SuppliersOnPool<CoinType>>(@account).heap_array;
-        vector::push_back(heap_array, supplier);
-    }
-
-    public fun add_borrower_in_p2p<CoinType>(supplier: address) acquires BorrowersInP2P {
-        let heap_array = &mut borrow_global_mut<BorrowersInP2P<CoinType>>(@account).heap_array;
-        vector::push_back(heap_array, supplier);
-    }
-
-    public fun add_borrower_on_pool<CoinType>(supplier: address) acquires BorrowersOnPool {
-        let heap_array = &mut borrow_global_mut<BorrowersOnPool<CoinType>>(@account).heap_array;
-        vector::push_back(heap_array, supplier);
+    public fun update_borrowers_on_pool<CoinType>(user: address, new_value: u256) acquires ProtocolHeap {
+        let borrower_heap = borrow_global_mut<ProtocolHeap<CoinType>>(@account);
+        let former_value = heap_ds::get_account_value(&borrower_heap.borrowers_on_pool, user);
+        heap_ds::update(&mut borrower_heap.borrowers_on_pool, user, former_value, new_value, INITIAL_HEAP_SIZE);
     }
 
     public fun add_supply_record<CoinType>(sender_addr: address, in_p2p: u256, on_pool: u256) acquires SupplyRecord {
@@ -302,31 +271,27 @@ module account::storage {
     }
 
     #[view]
-    public fun get_head_supplier_in_p2p<CoinType>(): address acquires SuppliersInP2P {
-        let heap_array = &borrow_global<SuppliersInP2P<CoinType>>(@account).heap_array;
-        let head_array_length = vector::length(heap_array);
-        if(head_array_length == 0) {
-            return @0x0;
-        };
-        *vector::borrow(heap_array, 0)
+    public fun get_head_supplier_in_p2p<CoinType>(): address acquires ProtocolHeap {
+        let supplier_heap = borrow_global<ProtocolHeap<CoinType>>(@account);
+        heap_ds::get_head(&supplier_heap.suppliers_in_p2p)
     }
 
     #[view]
-    public fun get_head_supplier_on_pool<CoinType>(): address acquires SuppliersOnPool {
-        let heap_array = &borrow_global<SuppliersOnPool<CoinType>>(@account).heap_array;
-        *vector::borrow(heap_array, 0)
+    public fun get_head_supplier_on_pool<CoinType>(): address acquires ProtocolHeap {
+        let supplier_heap = borrow_global<ProtocolHeap<CoinType>>(@account);
+        heap_ds::get_head(&supplier_heap.suppliers_on_pool)
     }
 
     #[view]
-    public fun get_head_borrower_in_p2p<CoinType>(): address acquires BorrowersInP2P {
-        let heap_array = &borrow_global<BorrowersInP2P<CoinType>>(@account).heap_array;
-        *vector::borrow(heap_array, 0)
+    public fun get_head_borrower_in_p2p<CoinType>(): address acquires ProtocolHeap {
+        let borrower_heap = borrow_global<ProtocolHeap<CoinType>>(@account);
+        heap_ds::get_head(&borrower_heap.borrowers_in_p2p)
     }
 
     #[view]
-    public fun get_head_borrower_on_pool<CoinType>(): address acquires BorrowersOnPool {
-        let heap_array = &borrow_global<BorrowersOnPool<CoinType>>(@account).heap_array;
-        *vector::borrow(heap_array, 0)
+    public fun get_head_borrower_on_pool<CoinType>(): address acquires ProtocolHeap {
+        let borrower_heap = borrow_global<ProtocolHeap<CoinType>>(@account);
+        heap_ds::get_head(&borrower_heap.borrowers_on_pool)
     }
 
     #[view] 
