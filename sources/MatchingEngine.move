@@ -200,15 +200,17 @@ module account::matching_engine {
         (amount - remaining_amount, iterations)
     }
 
-    // refactor later
     public fun update_supplier_in_DS<CoinType>(user: address) {
-        // storage::remove_supplier_on_pool<CoinType>(user);
-        // storage::add_supplier_on_pool<CoinType>(user);
+        let (p2p_supply_balance, pool_supply_balance) = storage::get_supply_balance<CoinType>(user);
+
+        storage::update_suppliers_on_pool<CoinType>(user, pool_supply_balance);
+        storage::update_suppliers_in_p2p<CoinType>(user, p2p_supply_balance);
     }
 
-    // refactor later
     public fun update_borrower_in_DS<CoinType>(user: address) {
-        // storage::remove_borrower_on_pool<CoinType>(user);
-        // storage::add_borrower_on_pool<CoinType>(user);
+        let (p2p_borrow_balance, pool_borrow_balance) = storage::get_borrow_balance<CoinType>(user);
+
+        storage::update_borrowers_on_pool<CoinType>(user, pool_borrow_balance);
+        storage::update_borrowers_in_p2p<CoinType>(user, p2p_borrow_balance);
     }
 }
