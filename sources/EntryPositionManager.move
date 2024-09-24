@@ -1,5 +1,6 @@
 module account::entry_positions_manager {
     use std::signer;
+    use std::debug::print;
     use account::storage;
     use account::interest_rate_manager;
     use account::math;
