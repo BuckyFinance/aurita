@@ -8,5 +8,4 @@ module account::interest_rate_manager {
         let pool_borrow_index: u256 = mock_lending::get_pool_borrow_index<CoinType>();
         storage::set_index<CoinType>(timestamp::now_seconds(), pool_supply_index, pool_borrow_index);
     }
-
 }

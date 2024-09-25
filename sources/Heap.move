@@ -16,6 +16,7 @@ module account::heap_ds {
 
     const ROOT: u256 = 1;
     const EADDRESS_ZERO: u64 = 1;
+    const EWRONG_INDEX: u64 = 2;
 
     public fun create_new_heap(max_sorted: u256): HeapArray {
         HeapArray {
@@ -154,11 +155,13 @@ module account::heap_ds {
     }
 
     fun set_account(heap: &mut HeapArray, index: u256, account: Account) {
+        check_index(heap, index);
         let old_account = smart_vector::borrow_mut(&mut heap.accounts, ((index - 1) as u64));
         *old_account = account;
     }
 
     fun set_account_value(heap: &mut HeapArray, index: u256, value: u256) {
+        check_index(heap, index);
         let old_account = smart_vector::borrow_mut(&mut heap.accounts, ((index - 1) as u64));
         old_account.value = value;
     }
@@ -170,11 +173,21 @@ module account::heap_ds {
         size
     }
 
+    fun check_index(heap: &HeapArray, index: u256) {
+        if (index == 0 || index > (smart_table::length(&heap.indexes) as u256)) {
+            abort EWRONG_INDEX;
+        };
+    }
+
     public fun get_account(heap: &HeapArray, index: u256): Account {
+        check_index(heap, index);
         *smart_vector::borrow(&heap.accounts, ((index - 1) as u64))
     }
 
     public fun get_account_value(heap: &HeapArray, user: address): u256 {
+        if (!smart_table::contains(&heap.indexes, user)) {
+            return 0;
+        };
         let index: u256 = *smart_table::borrow(&heap.indexes, user);
         get_account(heap, index).value
     }
