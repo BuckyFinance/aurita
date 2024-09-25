@@ -66,7 +66,7 @@ module account::coin {
         initialize(owner);
         init<USDC>(owner);
         mint<USDC>(@account, 100);
-        print(&coin::balance<USDC>(@account));
+        // print(&coin::balance<USDC>(@account));
     }
 
     #[test(owner = @account, user = @0x1001)]
@@ -79,8 +79,8 @@ module account::coin {
 
         let amount: u64 = 30;
         coin::transfer<USDC>(owner, signer::address_of(user), amount);
-        print(&coin::balance<USDC>(signer::address_of(user)));
-        print(&coin::balance<USDC>(signer::address_of(owner)));
+        // print(&coin::balance<USDC>(signer::address_of(user)));
+        // print(&coin::balance<USDC>(signer::address_of(owner)));
     }
 
 }

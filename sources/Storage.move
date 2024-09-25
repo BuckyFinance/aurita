@@ -2,6 +2,7 @@ module account::storage {
     use std::signer;
     use std::timestamp;
     use std::vector;
+    use std::debug::print;
     use std::simple_map::{Self, SimpleMap};
     use aptos_std::type_info::{TypeInfo, type_of};
     use account::heap_ds::{HeapArray, Self};
@@ -109,10 +110,6 @@ module account::storage {
             p2p_cursor,
         });
 
-        move_to(owner, MarketCreated {
-            market_created_list: vector::empty(),
-        });
-
         /// @ducanh2706 have to fix later (get index by calling pool)
         move_to(owner, Index<CoinType> {
             last_update_timestamp: timestamp::now_seconds(), 
@@ -202,6 +199,10 @@ module account::storage {
 
     public fun update_supply_record<CoinType>(sender_addr: address, in_p2p: u256, on_pool: u256) acquires SupplyRecord {
         let supply_map = &mut borrow_global_mut<SupplyRecord<CoinType>>(@account).supply_map;
+        if(simple_map::contains_key<address, SupplyBalance>(supply_map, &sender_addr) == false) {
+            add_supply_record<CoinType>(sender_addr, in_p2p, on_pool);
+            return
+        };
         let supply_balance = simple_map::borrow_mut<address, SupplyBalance>(supply_map, &sender_addr);
         supply_balance.in_p2p = in_p2p;
         supply_balance.on_pool = on_pool;
@@ -218,6 +219,10 @@ module account::storage {
 
     public fun update_borrow_record<CoinType>(sender_addr: address, in_p2p: u256, on_pool: u256) acquires BorrowRecord {
         let borrow_map = &mut borrow_global_mut<BorrowRecord<CoinType>>(@account).borrow_map;
+        if(simple_map::contains_key<address, BorrowBalance>(borrow_map, &sender_addr) == false) {
+            add_borrow_record<CoinType>(sender_addr, in_p2p, on_pool);
+            return
+        };
         let borrow_balance = simple_map::borrow_mut<address, BorrowBalance>(borrow_map, &sender_addr);
         borrow_balance.in_p2p = in_p2p;
         borrow_balance.on_pool = on_pool;
@@ -297,6 +302,9 @@ module account::storage {
     #[view] 
     public fun get_supply_balance<CoinType>(sender_addr: address): (u256, u256) acquires SupplyRecord {
         let supply_map = &borrow_global<SupplyRecord<CoinType>>(@account).supply_map;
+        if(simple_map::contains_key<address, SupplyBalance>(supply_map, &sender_addr) == false) {
+            return (0, 0)
+        };
         let supply_balance = simple_map::borrow<address, SupplyBalance>(supply_map, &sender_addr);
         (supply_balance.in_p2p, supply_balance.on_pool)
     }
@@ -330,4 +338,12 @@ module account::storage {
         let max_u256: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         max_u256
     }
+
+    #[test_only]
+    public fun init_module_for_tests(sender: &signer) {
+        init_module(sender);
+    }
 }
+
+
+
