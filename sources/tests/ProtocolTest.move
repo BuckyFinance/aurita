@@ -5,6 +5,8 @@ module account::protocol_test {
     use account::storage;
     use account::coin::{Self, USDC, USDT, WBTC, STAPT};
     use aptos_framework::timestamp;
+    use std::debug::print;
+    use account::utils;
 
     const INITIAL_COIN: u64 = 10000000000000; // 10^7
     const INITIAL_COIN_MOCK_POOL: u256 = 1000000000000; // 10^6
@@ -70,5 +72,9 @@ module account::protocol_test {
 
         // user1 supply to pool
         entry_positions_manager::supply<USDT>(user1, signer::address_of(user1), 1000000, 100);
+        print(&utils::get_user_supply_balance<USDT>(@0x1001));
+        let (p2p_supply, p2p_borrow) = storage::get_p2p_index<USDT>();
+        print(&p2p_supply);
+        print(&p2p_borrow);
     }
 }

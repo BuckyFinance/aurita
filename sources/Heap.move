@@ -155,13 +155,13 @@ module account::heap_ds {
     }
 
     fun set_account(heap: &mut HeapArray, index: u256, account: Account) {
-        check_index(heap, index);
+        check_index(heap, index, true);
         let old_account = smart_vector::borrow_mut(&mut heap.accounts, ((index - 1) as u64));
         *old_account = account;
     }
 
     fun set_account_value(heap: &mut HeapArray, index: u256, value: u256) {
-        check_index(heap, index);
+        check_index(heap, index, true);
         let old_account = smart_vector::borrow_mut(&mut heap.accounts, ((index - 1) as u64));
         old_account.value = value;
     }
@@ -173,14 +173,16 @@ module account::heap_ds {
         size
     }
 
-    fun check_index(heap: &HeapArray, index: u256) {
+    fun check_index(heap: &HeapArray, index: u256, revert: bool): bool {
         if (index == 0 || index > (smart_table::length(&heap.indexes) as u256)) {
-            abort EWRONG_INDEX;
+            if (revert) abort EWRONG_INDEX;
+            return false;
         };
-    }
+        true
+    }   
 
     public fun get_account(heap: &HeapArray, index: u256): Account {
-        check_index(heap, index);
+        check_index(heap, index, false);
         *smart_vector::borrow(&heap.accounts, ((index - 1) as u64))
     }
 

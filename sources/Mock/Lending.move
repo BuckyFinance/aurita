@@ -157,13 +157,13 @@ module account::mock_lending {
 
     #[view]
     public fun get_pool_supply_index<CoinType>(): u256 {
-        let pool_supply_index = 1000000000000000000;
+        let pool_supply_index = 1000000000000000900;
         pool_supply_index
     }
 
     #[view]
     public fun get_pool_borrow_index<CoinType>(): u256 {
-        let pool_borrow_index = 1000000000000000000;
+        let pool_borrow_index = 100000000000001100;
         pool_borrow_index
     }
 
