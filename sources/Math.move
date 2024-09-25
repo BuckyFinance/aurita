@@ -13,7 +13,7 @@ module account::math {
     }
 
     public fun wad_div(a: u256, b: u256): u256 {
-        assert!(b == 0, ERR_DIVSION_BY_ZERO);
+        assert!(b != 0, ERR_DIVSION_BY_ZERO);
         let halfB = b / 2;
         (a * WAD + halfB) / b
     }
@@ -26,7 +26,7 @@ module account::math {
     }
 
     public fun ray_div(a: u256, b: u256): u256 {
-        assert!(b == 0, ERR_DIVSION_BY_ZERO);
+        assert!(b != 0, ERR_DIVSION_BY_ZERO);
         let halfB = b / 2;
         (a * RAY + halfB) / b 
     }
