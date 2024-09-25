@@ -17,41 +17,62 @@ module account::coin {
 
     struct CoinCapabiltity<phantom CoinType> has key {
         mint_capability: MintCapability<CoinType>,
-        burn_capability: BurnCapability<CoinType>,
+        burn_capability: BurnCapability<CoinType>
     }
-    
+
     public fun initialize(owner: &signer) {
-        let (burn_a, freeze_a, mint_a) = coin::initialize<USDC>(owner, string::utf8(b"USD Coin"), string::utf8(b"USDC"), 6, true);
-        move_to(owner, CoinCapabiltity<USDC>{
-            mint_capability: mint_a,
-            burn_capability: burn_a,
-        });
+        let (burn_a, freeze_a, mint_a) =
+            coin::initialize<USDC>(
+                owner, string::utf8(b"USD Coin"), string::utf8(b"USDC"), 6, true
+            );
+        move_to(
+            owner,
+            CoinCapabiltity<USDC> { mint_capability: mint_a, burn_capability: burn_a }
+        );
         coin::destroy_freeze_cap<USDC>(freeze_a);
 
-        let (burn_b, freeze_b, mint_b) = coin::initialize<USDT>(owner, string::utf8(b"USD Tether"), string::utf8(b"USDT"), 6, true);
-        move_to(owner, CoinCapabiltity<USDT>{
-            mint_capability: mint_b,
-            burn_capability: burn_b,
-        });
+        let (burn_b, freeze_b, mint_b) =
+            coin::initialize<USDT>(
+                owner, string::utf8(b"USD Tether"), string::utf8(b"USDT"), 6, true
+            );
+        move_to(
+            owner,
+            CoinCapabiltity<USDT> { mint_capability: mint_b, burn_capability: burn_b }
+        );
         coin::destroy_freeze_cap<USDT>(freeze_b);
 
-        let (burn_c, freeze_c, mint_c) = coin::initialize<WBTC>(owner, string::utf8(b"Wrapped Bitcoin"), string::utf8(b"WBTC"), 6, true);
-        move_to(owner, CoinCapabiltity<WBTC>{
-            mint_capability: mint_c,
-            burn_capability: burn_c,
-        });
+        let (burn_c, freeze_c, mint_c) =
+            coin::initialize<WBTC>(
+                owner,
+                string::utf8(b"Wrapped Bitcoin"),
+                string::utf8(b"WBTC"),
+                6,
+                true
+            );
+        move_to(
+            owner,
+            CoinCapabiltity<WBTC> { mint_capability: mint_c, burn_capability: burn_c }
+        );
         coin::destroy_freeze_cap<WBTC>(freeze_c);
 
-        let (burn_d, freeze_d, mint_d) = coin::initialize<STAPT>(owner, string::utf8(b"Staked APT"), string::utf8(b"stAPT"), 6, true);
-        move_to(owner, CoinCapabiltity<STAPT>{
-            mint_capability: mint_d,
-            burn_capability: burn_d,
-        });
+        let (burn_d, freeze_d, mint_d) =
+            coin::initialize<STAPT>(
+                owner,
+                string::utf8(b"Staked APT"),
+                string::utf8(b"stAPT"),
+                6,
+                true
+            );
+        move_to(
+            owner,
+            CoinCapabiltity<STAPT> { mint_capability: mint_d, burn_capability: burn_d }
+        );
         coin::destroy_freeze_cap<STAPT>(freeze_d);
     }
 
     public fun mint<CoinType>(user: address, amount: u64) acquires CoinCapabiltity {
-        let mint_capability = &borrow_global<CoinCapabiltity<CoinType>>(@account).mint_capability;
+        let mint_capability =
+            &borrow_global<CoinCapabiltity<CoinType>>(@account).mint_capability;
         let mint_coin = coin::mint(amount, mint_capability);
         coin::deposit(user, mint_coin);
     }
@@ -61,6 +82,7 @@ module account::coin {
         account::create_account_for_test(signer::address_of(user));
         coin::register<CoinType>(user);
     }
+
     #[test(owner = @account)]
     public fun testMintCoin(owner: &signer) acquires CoinCapabiltity {
         initialize(owner);
@@ -82,5 +104,4 @@ module account::coin {
         // print(&coin::balance<USDC>(signer::address_of(user)));
         // print(&coin::balance<USDC>(signer::address_of(owner)));
     }
-
 }

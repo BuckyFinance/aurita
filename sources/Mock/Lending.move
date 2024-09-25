@@ -8,30 +8,33 @@ module account::mock_lending {
 
     const ERR: u64 = 1000;
     const BASE_12: u256 = 1000000000000;
-    
+
     friend account::mock_lending_test;
     friend account::utils;
 
     struct MarketReserve<phantom CoinType> has key {
-        reserve: Coin<CoinType>,
+        reserve: Coin<CoinType>
     }
 
     struct Market has key, store {
         total_deposit: u256,
         deposit_apy: u256,
-        borrow_apy: u256,
+        borrow_apy: u256
     }
 
     struct MarketRecord has key {
         market_list: vector<TypeInfo>,
-        market_map: SimpleMap<TypeInfo, Market>,
+        market_map: SimpleMap<TypeInfo, Market>
     }
 
     fun init_module(sender: &signer) {
-        move_to(sender, MarketRecord {
-            market_list: vector::empty(),
-            market_map: simple_map::create(),
-        });
+        move_to(
+            sender,
+            MarketRecord {
+                market_list: vector::empty(),
+                market_map: simple_map::create()
+            }
+        );
     }
 
     // ===============================================================================
@@ -39,9 +42,12 @@ module account::mock_lending {
     // ===============================================================================
 
     public entry fun admin_add_pool<CoinType>(sender: &signer) {
-        move_to<MarketReserve<CoinType>>(sender, MarketReserve<CoinType> {
-            reserve: coin::zero<CoinType>(),
-        });
+        move_to<MarketReserve<CoinType>>(
+            sender,
+            MarketReserve<CoinType> {
+                reserve: coin::zero<CoinType>()
+            }
+        );
     }
 
     public entry fun create_usdt_market<CoinType>() acquires MarketRecord {
@@ -82,7 +88,9 @@ module account::mock_lending {
         coin::merge(reserve, coin);
     }
 
-    public fun withdraw<CoinType>(sender: &signer, amount: u256): Coin<CoinType> acquires MarketRecord, MarketReserve {
+    public fun withdraw<CoinType>(
+        sender: &signer, amount: u256
+    ): Coin<CoinType> acquires MarketRecord, MarketReserve {
         let sender_addr = signer::address_of(sender);
         let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
         let coin_type = type_of<CoinType>();
@@ -96,12 +104,14 @@ module account::mock_lending {
         coin
     }
 
-    public fun borrow<CoinType>(sender: &signer, amount: u256): Coin<CoinType> acquires MarketRecord, MarketReserve {
+    public fun borrow<CoinType>(
+        sender: &signer, amount: u256
+    ): Coin<CoinType> acquires MarketRecord, MarketReserve {
         let coin = withdraw<CoinType>(sender, amount);
         coin
     }
 
-    public fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve{
+    public fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
         deposit<CoinType>(sender, amount);
     }
 
@@ -109,10 +119,10 @@ module account::mock_lending {
     // ============================= Helper Function ==================================
     // ================================================================================
 
-    public fun create_market (
+    public fun create_market(
         coin_type: TypeInfo,
         deposit_apy: u256,
-        borrow_apy: u256,
+        borrow_apy: u256
     ) acquires MarketRecord {
         let market_record = borrow_global_mut<MarketRecord>(@account);
         let market_list = &mut market_record.market_list;
@@ -121,7 +131,7 @@ module account::mock_lending {
         let market = Market {
             total_deposit: 0,
             deposit_apy: deposit_apy,
-            borrow_apy: borrow_apy,
+            borrow_apy: borrow_apy
         };
         simple_map::add(market_map, coin_type, market);
     }
@@ -171,6 +181,4 @@ module account::mock_lending {
     public fun init_module_for_tests(sender: &signer) {
         init_module(sender);
     }
-
-
 }

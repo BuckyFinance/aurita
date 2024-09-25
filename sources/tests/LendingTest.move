@@ -15,22 +15,26 @@ module account::mock_lending_test {
         apt_coin: Coin<FakeAPT>,
         apt_cap: coin::MintCapability<FakeAPT>,
         apt_burn: coin::BurnCapability<FakeAPT>,
-        apt_freeze: coin::FreezeCapability<FakeAPT>,
+        apt_freeze: coin::FreezeCapability<FakeAPT>
     }
 
     public entry fun init_fake_pools(admin: &signer) {
         let admin_addr = signer::address_of(admin);
         let name = string::utf8(b"Aptos Token");
         let symbol = string::utf8(b"APT");
-        let (apt_burn, apt_freeze, apt_cap) = coin::initialize<FakeAPT>(admin, name, symbol, 6, false);
+        let (apt_burn, apt_freeze, apt_cap) =
+            coin::initialize<FakeAPT>(admin, name, symbol, 6, false);
 
         let mint_amount = 2000000000000;
-        move_to(admin, FreeCoins {
-            apt_coin: coin::mint<FakeAPT>(mint_amount, &apt_cap),
-            apt_cap,
-            apt_burn,
-            apt_freeze,
-        });
+        move_to(
+            admin,
+            FreeCoins {
+                apt_coin: coin::mint<FakeAPT>(mint_amount, &apt_cap),
+                apt_cap,
+                apt_burn,
+                apt_freeze
+            }
+        );
     }
 
     fun init_coin_stores(user: &signer) acquires FreeCoins {
@@ -47,7 +51,7 @@ module account::mock_lending_test {
         let deposit_amount: u256 = 1000000000;
         mock_lending::deposit<FakeAPT>(user, 1000000000);
     }
-    
+
     #[test_only]
     fun test_init(admin: &signer, user1: &signer) acquires FreeCoins {
         let admin_addr = signer::address_of(admin);
@@ -70,7 +74,7 @@ module account::mock_lending_test {
         // user deposit to pool
         create_fake_user(user1);
     }
-    
+
     #[test(sender = @account)]
     public fun test_market(sender: &signer) {
         mock_lending::init_module_for_tests(sender);
@@ -80,7 +84,7 @@ module account::mock_lending_test {
         assert!(apt_borrow_apy == 50500 * BASE_12, ERR_TEST);
     }
 
-    #[test(admin=@account, user1=@0x1001)]
+    #[test(admin = @account, user1 = @0x1001)]
     public entry fun test_deposit(admin: &signer, user1: &signer) acquires FreeCoins {
         let admin_addr = signer::address_of(admin);
         let user1_addr = signer::address_of(admin);
@@ -97,7 +101,7 @@ module account::mock_lending_test {
         // print(&lending_protocol_balance);
     }
 
-    #[test(admin=@account, user1=@0x1001)]
+    #[test(admin = @account, user1 = @0x1001)]
     public entry fun test_withdraw(admin: &signer, user1: &signer) acquires FreeCoins {
         let user1_addr = signer::address_of(user1);
         mock_lending::init_module_for_tests(admin);
@@ -109,5 +113,4 @@ module account::mock_lending_test {
         // let user_balance = coin::balance<FakeAPT>(user1_addr);
         // assert!(user_balance == 1000000000, ERR_TEST);
     }
-
 }

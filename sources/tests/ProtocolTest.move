@@ -31,18 +31,20 @@ module account::protocol_test {
         // set up global time for testing purpose
         timestamp::set_time_has_started_for_testing(aptos_framework);
     }
-    
+
     #[test_only(admin = @account, user1 = @0x1001)]
-    public fun test_init(admin: &signer, user1: &signer, aptos_framework: &signer) {
-        
+    public fun test_init(
+        admin: &signer, user1: &signer, aptos_framework: &signer
+    ) {
+
         // set up timestamp
-        set_up_test_for_time(aptos_framework);    
+        set_up_test_for_time(aptos_framework);
 
         // mint coin for admin and user
         coin::initialize(admin);
         init_and_mint_coin(admin);
         init_and_mint_coin(user1);
-        
+
         // init pool for mock lending
         mock_lending::init_module_for_tests(admin);
         mock_lending::admin_add_pool<USDT>(admin);
@@ -67,11 +69,15 @@ module account::protocol_test {
     }
 
     #[test(admin = @account, user1 = @0x1001, aptos_framework = @aptos_framework)]
-    public fun test_supply(admin: &signer, user1: &signer, aptos_framework: &signer) {
+    public fun test_supply(
+        admin: &signer, user1: &signer, aptos_framework: &signer
+    ) {
         test_init(admin, user1, aptos_framework);
 
         // user1 supply to pool
-        entry_positions_manager::supply<USDT>(user1, signer::address_of(user1), 1000000, 100);
+        entry_positions_manager::supply<USDT>(
+            user1, signer::address_of(user1), 1000000, 100
+        );
         print(&utils::get_user_supply_balance<USDT>(@0x1001));
         let (p2p_supply, p2p_borrow) = storage::get_p2p_index<USDT>();
         print(&p2p_supply);

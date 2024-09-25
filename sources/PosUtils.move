@@ -16,7 +16,7 @@ module account::pos_utils {
         let coin = mock_lending::borrow<CoinType>(user, amount);
         coin
     }
-    
+
     public fun repay<CoinType>(user: &signer, amount: u256) {
         mock_lending::repay<CoinType>(user, amount);
     }

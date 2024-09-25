@@ -2,16 +2,15 @@ module account::heap_ds {
     use aptos_std::smart_vector::{SmartVector, Self};
     use aptos_std::smart_table::{SmartTable, Self};
 
-
     struct Account has store, drop, copy {
         user: address,
-        value: u256,
+        value: u256
     }
 
     struct HeapArray has store {
         accounts: SmartVector<Account>,
         sorted_size: u256,
-        indexes: SmartTable<address, u256>,
+        indexes: SmartTable<address, u256>
     }
 
     const ROOT: u256 = 1;
@@ -22,11 +21,17 @@ module account::heap_ds {
         HeapArray {
             accounts: smart_vector::new(),
             sorted_size: 0,
-            indexes: smart_table::new(),
+            indexes: smart_table::new()
         }
     }
 
-    public fun update(heap: &mut HeapArray, user: address, former_value: u256, new_value: u256, max_sorted: u256) {
+    public fun update(
+        heap: &mut HeapArray,
+        user: address,
+        former_value: u256,
+        new_value: u256,
+        max_sorted: u256
+    ) {
         let size: u256 = heap.sorted_size;
         let new_size: u256 = compute_size(size, max_sorted);
         if (new_size != size) {
@@ -34,17 +39,24 @@ module account::heap_ds {
         };
 
         if (former_value != new_value) {
-            if (new_value == 0) {remove(heap, user, former_value);}
-            else if (former_value == 0) {insert(heap, user, new_value, max_sorted);}
-            else if (former_value < new_value) {increase(heap, user, new_value, max_sorted);}
-            else {decrease(heap, user, new_value);};
+            if (new_value == 0) {
+                remove(heap, user, former_value);
+            } else if (former_value == 0) {
+                insert(heap, user, new_value, max_sorted);
+            } else if (former_value < new_value) {
+                increase(heap, user, new_value, max_sorted);
+            } else {
+                decrease(heap, user, new_value);
+            };
         };
     }
 
     fun shift_up(heap: &mut HeapArray, index: u256) {
         let account_to_shift = get_account(heap, index);
         let value_to_shift = account_to_shift.value;
-        let parent_account: Account = if (index > ROOT) get_account(heap, index / 2) else Account{user: @0x0, value: 0};
+        let parent_account: Account =
+            if (index > ROOT) get_account(heap, index / 2)
+            else Account { user: @0x0, value: 0 };
         while (index > ROOT && value_to_shift > parent_account.value) {
             set_account(heap, index, parent_account);
             index = index / 2;
@@ -73,15 +85,16 @@ module account::heap_ds {
                 set_account(heap, index, child_to_swap);
                 index = child_index;
                 child_index = index * 2;
-            }
-            else {
+            } else {
                 break;
             };
         };
         set_account(heap, index, account_to_shift);
     }
 
-    fun increase(heap: &mut HeapArray, user: address, value: u256, max_sorted: u256) {
+    fun increase(
+        heap: &mut HeapArray, user: address, value: u256, max_sorted: u256
+    ) {
         let index: u256 = *smart_table::borrow(&heap.indexes, user);
         set_account_value(heap, index, value);
 
@@ -89,8 +102,7 @@ module account::heap_ds {
 
         if (index < next_size) {
             shift_up(heap, index);
-        }
-        else {
+        } else {
             swap(heap, index, next_size);
             shift_up(heap, next_size);
             heap.sorted_size = compute_size(next_size, max_sorted);
@@ -109,7 +121,8 @@ module account::heap_ds {
 
         // swap with the last account
         swap(heap, index, accounts_length);
-        if (heap.sorted_size == accounts_length) heap.sorted_size = heap.sorted_size - 1;
+        if (heap.sorted_size == accounts_length) heap.sorted_size = heap.sorted_size
+            - 1;
 
         // remove the last account
         smart_vector::pop_back(&mut heap.accounts);
@@ -120,18 +133,19 @@ module account::heap_ds {
         if (index <= heap.sorted_size) {
             if (value > get_account(heap, index).value) {
                 shift_down(heap, index);
-            }
-            else {
+            } else {
                 shift_up(heap, index);
             };
         }
     }
 
-    fun insert(heap: &mut HeapArray, user: address, value: u256, max_sorted: u256) {
+    fun insert(
+        heap: &mut HeapArray, user: address, value: u256, max_sorted: u256
+    ) {
         assert!(user != @0x0, EADDRESS_ZERO);
 
         // push to the end of array
-        smart_vector::push_back(&mut heap.accounts, Account{user: user, value: value});
+        smart_vector::push_back(&mut heap.accounts, Account { user: user, value: value });
         let accounts_length: u256 = (smart_vector::length(&heap.accounts) as u256);
         smart_table::upsert(&mut heap.indexes, user, accounts_length);
 
@@ -156,13 +170,17 @@ module account::heap_ds {
 
     fun set_account(heap: &mut HeapArray, index: u256, account: Account) {
         check_index(heap, index, true);
-        let old_account = smart_vector::borrow_mut(&mut heap.accounts, ((index - 1) as u64));
+        let old_account = smart_vector::borrow_mut(
+            &mut heap.accounts, ((index - 1) as u64)
+        );
         *old_account = account;
     }
 
     fun set_account_value(heap: &mut HeapArray, index: u256, value: u256) {
         check_index(heap, index, true);
-        let old_account = smart_vector::borrow_mut(&mut heap.accounts, ((index - 1) as u64));
+        let old_account = smart_vector::borrow_mut(
+            &mut heap.accounts, ((index - 1) as u64)
+        );
         old_account.value = value;
     }
 
@@ -179,7 +197,7 @@ module account::heap_ds {
             return false;
         };
         true
-    }   
+    }
 
     public fun get_account(heap: &HeapArray, index: u256): Account {
         check_index(heap, index, false);
@@ -223,5 +241,4 @@ module account::heap_ds {
         };
         get_account(heap, index + 1).user
     }
-
 }
