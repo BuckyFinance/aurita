@@ -379,6 +379,9 @@ module account::storage {
     #[view]
     public fun get_borrow_balance<CoinType>(sender_addr: address): (u256, u256) acquires BorrowRecord {
         let borrow_map = &borrow_global<BorrowRecord<CoinType>>(@account).borrow_map;
+        if (simple_map::contains_key(borrow_map, &sender_addr) == false) {
+            return (0, 0)
+        };
         let borrow_balance =
             simple_map::borrow<address, BorrowBalance>(borrow_map, &sender_addr);
         (borrow_balance.in_p2p, borrow_balance.on_pool)

@@ -66,7 +66,8 @@ module account::matching_engine {
             );
             remaining_amount = remaining_amount - vars.to_match;
 
-            pool_supply_balance = pool_supply_balance
+            pool_supply_balance = if (pool_supply_balance
+                < math::ray_div(vars.to_match, vars.pool_index)) 0 else pool_supply_balance
                 - math::ray_div(vars.to_match, vars.pool_index);
             p2p_supply_balance = p2p_supply_balance
                 + math::ray_div(vars.to_match, vars.p2p_index);

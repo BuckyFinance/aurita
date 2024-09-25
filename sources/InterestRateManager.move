@@ -7,8 +7,6 @@ module account::interest_rate_manager {
     public fun update_indexes<CoinType>() {
         let pool_supply_index: u256 = mock_lending::get_pool_supply_index<CoinType>();
         let pool_borrow_index: u256 = mock_lending::get_pool_borrow_index<CoinType>();
-        print(&pool_supply_index);
-        print(&pool_borrow_index);
         storage::set_index<CoinType>(
             timestamp::now_seconds(), pool_supply_index, pool_borrow_index
         );

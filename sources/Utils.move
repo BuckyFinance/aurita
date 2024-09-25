@@ -135,4 +135,9 @@ module account::utils {
         liquidity_data.total_max_debt = liquidity_data.total_max_debt + max_debt;
         liquidity_data.total_debt = liquidity_data.total_debt + debt;
     }
+
+    #[test_only]
+    public fun init_module_for_tests(sender: &signer) {
+        init_module(sender);
+    }
 }
