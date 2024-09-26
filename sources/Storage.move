@@ -333,7 +333,6 @@ module account::storage {
         HEALTH_FACTOR_LIQUIDATION_THRESHOLD
     }
 
-    #[view]
     public fun max_u256(): u256 {
         let max_u256: u256 = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         max_u256
