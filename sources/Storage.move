@@ -6,6 +6,7 @@ module account::storage {
     use std::simple_map::{Self, SimpleMap};
     use aptos_std::type_info::{TypeInfo, type_of};
     use account::heap_ds::{HeapArray, Self};
+    use std::string;
 
     const HEALTH_FACTOR_LIQUIDATION_THRESHOLD: u256 = 1000000000000000000;
     const INITIAL_HEAP_SIZE: u256 = 100;
@@ -196,6 +197,10 @@ module account::storage {
         let supplier_heap = borrow_global_mut<ProtocolHeap<CoinType>>(@account);
         let former_value =
             heap_ds::get_account_value(&supplier_heap.suppliers_on_pool, user);
+
+        print(&string::utf8(b"Former value"));
+        print(&former_value);
+        print(&new_value);
         heap_ds::update(
             &mut supplier_heap.suppliers_on_pool,
             user,

@@ -7,6 +7,7 @@ module account::protocol_test {
     use aptos_framework::timestamp;
     use std::debug::print;
     use account::utils;
+    use std::string;
 
     const INITIAL_COIN: u64 = 10000000000000; // 10^7
     const INITIAL_COIN_MOCK_POOL: u256 = 1000000000000; // 10^6
@@ -80,7 +81,6 @@ module account::protocol_test {
         entry_positions_manager::supply<USDT>(
             user1, signer::address_of(user1), 1000000, 100
         );
-        print(&utils::get_user_supply_balance<USDT>(@0x1001));
         let (p2p_supply, p2p_borrow) = storage::get_p2p_index<USDT>();
         print(&p2p_supply);
         print(&p2p_borrow);
@@ -102,21 +102,27 @@ module account::protocol_test {
         init_and_mint_coin(user4);
 
         entry_positions_manager::supply<USDT>(
-            user2, signer::address_of(user1), 3000000, 100
+            user2, signer::address_of(user2), 3000000, 100
         );
 
         entry_positions_manager::supply<USDT>(
-            user3, signer::address_of(user1), 3000000, 100
+            user3, signer::address_of(user3), 3000000, 100
         );
 
         entry_positions_manager::supply<WBTC>(
             user4, signer::address_of(user4), 10000000, 100
         );
-
-        entry_positions_manager::borrow<USDT>(
-            user4, 70000000, 100
-        );
         let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>(); 
+
+        print(&string::utf8(b"---BEFORE ------"));
+        print(&p2psa);
+        print(&p2pba);
+        print(&string::utf8(b"-------------------   "));
+        entry_positions_manager::borrow<USDT>(
+            user4, 8000000, 100
+        );
+        (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
+        print(&string::utf8(b"---AFTER ------")); 
         print(&p2psa);
         print(&p2pba);
         

@@ -17,6 +17,7 @@ module account::matching_engine {
     use account::utils;
     use std::debug::print;
     use account::math;
+    use std::string;
 
     struct MatchingVars has copy, drop {
         p2p_index: u256,
@@ -57,7 +58,6 @@ module account::matching_engine {
             && remaining_amount > 0
             && matched_supplier != @0x0) {
             iterations = iterations - 1;
-
             let (p2p_supply_balance, pool_supply_balance) =
                 storage::get_supply_balance<CoinType>(matched_supplier);
 
@@ -247,7 +247,6 @@ module account::matching_engine {
     public fun update_supplier_in_DS<CoinType>(user: address) {
         let (p2p_supply_balance, pool_supply_balance) =
             storage::get_supply_balance<CoinType>(user);
-
         storage::update_suppliers_on_pool<CoinType>(user, pool_supply_balance);
         storage::update_suppliers_in_p2p<CoinType>(user, p2p_supply_balance);
     }

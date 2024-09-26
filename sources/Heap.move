@@ -1,6 +1,8 @@
 module account::heap_ds {
     use aptos_std::smart_vector::{SmartVector, Self};
     use aptos_std::smart_table::{SmartTable, Self};
+    use std::debug::print;
+    use std::string;
 
     struct Account has store, drop, copy {
         user: address,
@@ -118,7 +120,6 @@ module account::heap_ds {
     fun remove(heap: &mut HeapArray, user: address, value: u256) {
         let index: u256 = *smart_table::borrow(&heap.indexes, user);
         let accounts_length: u256 = (smart_vector::length(&heap.accounts) as u256);
-
         // swap with the last account
         swap(heap, index, accounts_length);
         if (heap.sorted_size == accounts_length) heap.sorted_size = heap.sorted_size
@@ -126,12 +127,14 @@ module account::heap_ds {
 
         // remove the last account
         smart_vector::pop_back(&mut heap.accounts);
+
         // delele from map
         smart_table::remove(&mut heap.indexes, user);
 
         // swapped amount in the heap -> restore the invariant
         if (index <= heap.sorted_size) {
             if (value > get_account(heap, index).value) {
+                print(&string::utf8(b"shift down"));
                 shift_down(heap, index);
             } else {
                 shift_up(heap, index);
@@ -240,5 +243,38 @@ module account::heap_ds {
             return @0x0;
         };
         get_account(heap, index + 1).user
+    }
+
+    #[test_only]
+    struct Dak has key {
+        heap_array: HeapArray
+    }
+
+    #[test(user1=@0x2)]
+    public fun test_heap(user1: &signer) acquires Dak {
+        move_to(user1, Dak {
+            heap_array: create_new_heap(10)
+        });
+        let v = borrow_global_mut<Dak>(@0x2);
+        update(&mut v.heap_array, @0x1, 0, 50, 10);
+        update(&mut v.heap_array, @0x2, 0, 20, 10);
+        update(&mut v.heap_array, @0x3, 0, 30, 10);
+
+        assert!(*smart_table::borrow(&v.heap_array.indexes, @0x1) == 1, 100);
+        assert!(*smart_table::borrow(&v.heap_array.indexes, @0x2) == 2, 101);
+        assert!(*smart_table::borrow(&v.heap_array.indexes, @0x3) == 3, 102);
+
+        assert!(get_head(&v.heap_array) == @0x1, 100);
+
+        update(&mut v.heap_array, @0x1, 50, 0, 10);
+        
+        assert!(*smart_table::borrow(&v.heap_array.indexes, @0x2) == 2, 101);
+        assert!(*smart_table::borrow(&v.heap_array.indexes, @0x3) == 3, 102);
+
+        assert!(get_head(&v.heap_array) == @0x3, 101);
+
+        update(&mut v.heap_array, @0x3, 20, 0, 10);
+
+        // assert!(get_head(&v.heap_array) == @0x2, 102);
     }
 }

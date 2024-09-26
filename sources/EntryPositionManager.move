@@ -7,6 +7,7 @@ module account::entry_positions_manager {
     use account::matching_engine;
     use account::pos_utils;
     use account::utils;
+    use std::string;
 
     use std::coin::{Coin, Self};
 
@@ -125,7 +126,6 @@ module account::entry_positions_manager {
 
         let (p2p_supply_delta, p2p_borrow_delta, p2p_supply_amount, p2p_borrow_amount) =
             storage::get_delta<CoinType>();
-
         let vars: BorrowVar = BorrowVar {
             remain_to_borrow: amount,
             pool_supply_index: pool_supply_index,
@@ -152,10 +152,14 @@ module account::entry_positions_manager {
                 matching_engine::match_supplier<CoinType>(
                     user, vars.remain_to_borrow, iterations
                 );
+            print(&string::utf8(b"Matched amount"));
+            print(&matched_amount);
             vars.to_withdraw = vars.to_withdraw + matched_amount;
             vars.remain_to_borrow = vars.remain_to_borrow - matched_amount;
             p2p_supply_amount = p2p_supply_amount
                 + math::ray_div(matched_amount, p2p_supply_index);
+            
+            print(&p2p_supply_index);
         };
 
         let (user_borrow_in_p2p, user_borrow_on_pool) =
@@ -186,6 +190,10 @@ module account::entry_positions_manager {
         storage::update_borrow_record<CoinType>(
             user_addr, user_borrow_in_p2p, user_borrow_on_pool
         );
+
+        print(&string::utf8(b" --------- P2P AMOUNT ------"));
+        print(&p2p_supply_amount);
+        print(&p2p_borrow_amount);
         // update delta
         storage::set_delta<CoinType>(
             p2p_supply_delta,
