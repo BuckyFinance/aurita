@@ -20,7 +20,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import Check from "./../media/check.svg"
+
 function Migrate(){
 
     const [isModalOpen, setIsModalOpen] = useState(false);
