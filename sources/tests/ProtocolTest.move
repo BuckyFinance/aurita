@@ -131,4 +131,51 @@ module account::protocol_test {
         entry_positions_manager::borrow<USDT>(user4, 8000000, 100);
         (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
     }
+
+    #[
+        test(
+            admin = @account,
+            user1 = @0x1001,
+            user2 = @0x1002,
+            user3 = @0x1003,
+            user4 = @0x1004,
+            aptos_framework = @aptos_framework
+        )
+    ]
+    public fun test_borrow_before_supply(
+        admin: &signer,
+        user1: &signer,
+        user2: &signer,
+        user3: &signer,
+        user4: &signer,
+        aptos_framework: &signer
+    ) {
+        test_init(admin, user1, aptos_framework);
+        init_and_mint_coin(user2);
+        init_and_mint_coin(user3);
+        init_and_mint_coin(user4);
+    
+        // user1 supply to pool
+        entry_positions_manager::supply<WBTC>(
+            user1, signer::address_of(user1), 1000000, 100
+        );
+
+        entry_positions_manager::supply<USDC>(
+            user2, signer::address_of(user2), 3000000, 100
+        );
+
+        entry_positions_manager::borrow<USDT>(user1, 1000000, 100);
+        print(&std::coin::balance<USDT>(signer::address_of(user1)));
+
+        entry_positions_manager::borrow<USDT>(user2, 2000000, 100);
+        print(&std::coin::balance<USDT>(signer::address_of(user2)));
+
+        entry_positions_manager::supply<USDT>(
+            user3, signer::address_of(user3), 3500000, 100
+        );
+
+        let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
+        print(&p2psa);
+        print(&p2pba);
+    }
 }
