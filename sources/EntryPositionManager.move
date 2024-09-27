@@ -27,7 +27,10 @@ module account::entry_positions_manager {
     }
 
     public fun supply<CoinType>(
-        user: &signer, on_behalf: address, amount: u256, iterations: u256
+        user: &signer,
+        on_behalf: address,
+        amount: u256,
+        iterations: u256
     ) {
         let user_addr = signer::address_of(user);
         assert!(amount > 0, EAMOUNT_ZERO);
@@ -152,14 +155,11 @@ module account::entry_positions_manager {
                 matching_engine::match_supplier<CoinType>(
                     user, vars.remain_to_borrow, iterations
                 );
-            print(&string::utf8(b"Matched amount"));
-            print(&matched_amount);
             vars.to_withdraw = vars.to_withdraw + matched_amount;
             vars.remain_to_borrow = vars.remain_to_borrow - matched_amount;
             p2p_supply_amount = p2p_supply_amount
                 + math::ray_div(matched_amount, p2p_supply_index);
-            
-            print(&p2p_supply_index);
+
         };
 
         let (user_borrow_in_p2p, user_borrow_on_pool) =
@@ -191,9 +191,6 @@ module account::entry_positions_manager {
             user_addr, user_borrow_in_p2p, user_borrow_on_pool
         );
 
-        print(&string::utf8(b" --------- P2P AMOUNT ------"));
-        print(&p2p_supply_amount);
-        print(&p2p_borrow_amount);
         // update delta
         storage::set_delta<CoinType>(
             p2p_supply_delta,

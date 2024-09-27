@@ -173,8 +173,7 @@ module account::storage {
     }
 
     // @todo
-    public fun update_index<CoinType>() {
-    }
+    public fun update_index<CoinType>() {}
 
     public fun update_suppliers_in_p2p<CoinType>(
         user: address, new_value: u256
@@ -198,9 +197,6 @@ module account::storage {
         let former_value =
             heap_ds::get_account_value(&supplier_heap.suppliers_on_pool, user);
 
-        print(&string::utf8(b"Former value"));
-        print(&former_value);
-        print(&new_value);
         heap_ds::update(
             &mut supplier_heap.suppliers_on_pool,
             user,

@@ -23,7 +23,11 @@ module account::coin {
     public fun initialize(owner: &signer) {
         let (burn_a, freeze_a, mint_a) =
             coin::initialize<USDC>(
-                owner, string::utf8(b"USD Coin"), string::utf8(b"USDC"), 6, true
+                owner,
+                string::utf8(b"USD Coin"),
+                string::utf8(b"USDC"),
+                6,
+                true
             );
         move_to(
             owner,
@@ -33,7 +37,11 @@ module account::coin {
 
         let (burn_b, freeze_b, mint_b) =
             coin::initialize<USDT>(
-                owner, string::utf8(b"USD Tether"), string::utf8(b"USDT"), 6, true
+                owner,
+                string::utf8(b"USD Tether"),
+                string::utf8(b"USDT"),
+                6,
+                true
             );
         move_to(
             owner,

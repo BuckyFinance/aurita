@@ -120,9 +120,7 @@ module account::mock_lending {
     // ================================================================================
 
     public fun create_market(
-        coin_type: TypeInfo,
-        deposit_apy: u256,
-        borrow_apy: u256
+        coin_type: TypeInfo, deposit_apy: u256, borrow_apy: u256
     ) acquires MarketRecord {
         let market_record = borrow_global_mut<MarketRecord>(@account);
         let market_list = &mut market_record.market_list;

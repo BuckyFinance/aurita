@@ -95,7 +95,10 @@ module account::heap_ds {
     }
 
     fun increase(
-        heap: &mut HeapArray, user: address, value: u256, max_sorted: u256
+        heap: &mut HeapArray,
+        user: address,
+        value: u256,
+        max_sorted: u256
     ) {
         let index: u256 = *smart_table::borrow(&heap.indexes, user);
         set_account_value(heap, index, value);
@@ -142,7 +145,10 @@ module account::heap_ds {
     }
 
     fun insert(
-        heap: &mut HeapArray, user: address, value: u256, max_sorted: u256
+        heap: &mut HeapArray,
+        user: address,
+        value: u256,
+        max_sorted: u256
     ) {
         assert!(user != @0x0, EADDRESS_ZERO);
 
@@ -252,11 +258,9 @@ module account::heap_ds {
         heap_array: HeapArray
     }
 
-    #[test(user1=@0x2)]
+    #[test(user1 = @0x2)]
     public fun test_heap(user1: &signer) acquires Dak {
-        move_to(user1, Dak {
-            heap_array: create_new_heap(10)
-        });
+        move_to(user1, Dak { heap_array: create_new_heap(10) });
         let v = borrow_global_mut<Dak>(@0x2);
         update(&mut v.heap_array, @0x1, 0, 50, 10);
         update(&mut v.heap_array, @0x2, 0, 20, 10);
@@ -269,7 +273,7 @@ module account::heap_ds {
         assert!(get_head(&v.heap_array) == @0x1, 100);
 
         update(&mut v.heap_array, @0x1, 50, 0, 10);
-        
+
         assert!(*smart_table::borrow(&v.heap_array.indexes, @0x2) == 2, 101);
         assert!(*smart_table::borrow(&v.heap_array.indexes, @0x3) == 1, 102);
 

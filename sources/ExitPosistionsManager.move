@@ -21,7 +21,10 @@ module account::exit_positions_manager {
         let is_withdraw_allowed = withdraw_allowed<CoinType>(sender_addr, to_withdraw);
         if (is_withdraw_allowed) {
             unsafe_withdraw_logic<CoinType>(
-                sender, to_withdraw, receiver, max_iterations_for_matching
+                sender,
+                to_withdraw,
+                receiver,
+                max_iterations_for_matching
             );
         };
     }

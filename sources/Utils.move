@@ -77,9 +77,7 @@ module account::utils {
     }
 
     public fun get_liquidity_data<CoinType>(
-        user_addr: address,
-        amount_withdrawn: u256,
-        amount_borrowed: u256
+        user_addr: address, amount_withdrawn: u256, amount_borrowed: u256
     ): (u256, u256, u256, u256) acquires LiquidityData {
         let market_coin = type_of<CoinType>();
         calculate_liquidity_for_each_market<USDC>(

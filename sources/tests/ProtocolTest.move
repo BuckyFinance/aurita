@@ -86,9 +86,23 @@ module account::protocol_test {
         print(&p2p_borrow);
     }
 
-    #[test(admin = @account, user1 = @0x1001, user2 = @0x1002, user3 = @0x1003, user4 = @0x1004, aptos_framework = @aptos_framework)]
+    #[
+        test(
+            admin = @account,
+            user1 = @0x1001,
+            user2 = @0x1002,
+            user3 = @0x1003,
+            user4 = @0x1004,
+            aptos_framework = @aptos_framework
+        )
+    ]
     public fun test_borrow(
-        admin: &signer, user1: &signer, user2: &signer, user3: &signer, user4: &signer, aptos_framework: &signer
+        admin: &signer,
+        user1: &signer,
+        user2: &signer,
+        user3: &signer,
+        user4: &signer,
+        aptos_framework: &signer
     ) {
         test_init(admin, user1, aptos_framework);
 
@@ -96,7 +110,7 @@ module account::protocol_test {
         entry_positions_manager::supply<USDT>(
             user1, signer::address_of(user1), 1000000, 100
         );
-        
+
         init_and_mint_coin(user2);
         init_and_mint_coin(user3);
         init_and_mint_coin(user4);
@@ -112,19 +126,9 @@ module account::protocol_test {
         entry_positions_manager::supply<WBTC>(
             user4, signer::address_of(user4), 10000000, 100
         );
-        let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>(); 
+        let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
-        print(&string::utf8(b"---BEFORE ------"));
-        print(&p2psa);
-        print(&p2pba);
-        print(&string::utf8(b"-------------------   "));
-        entry_positions_manager::borrow<USDT>(
-            user4, 8000000, 100
-        );
+        entry_positions_manager::borrow<USDT>(user4, 8000000, 100);
         (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
-        print(&string::utf8(b"---AFTER ------")); 
-        print(&p2psa);
-        print(&p2pba);
-        
     }
 }
