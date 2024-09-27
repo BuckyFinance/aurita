@@ -8,7 +8,7 @@ module account::exit_positions_manager {
     use account::matching_engine;
     use account::interest_rate_manager;
 
-    public fun withdraw_logic<CoinType>(
+    public entry fun withdraw<CoinType>(
         sender: &signer,
         amount: u256,
         receiver: address,
@@ -24,7 +24,7 @@ module account::exit_positions_manager {
         };
     }
 
-    public fun repay_logic<CoinType>(
+    public entry fun repay<CoinType>(
         sender: &signer,
         on_behalf: address,
         amount: u256,
@@ -269,6 +269,7 @@ module account::exit_positions_manager {
 
     // ============================== Helper Function =================================
 
+    #[view]
     public fun get_user_health_factor<CoinType>(sender_addr: address, withdrawn_amount: u256): u256 {
         let (total_collateral, total_borrowable, total_max_debt, total_debt) = utils::get_liquidity_data<CoinType>(sender_addr, withdrawn_amount, 0);
         let health_factor = storage::max_u256();
