@@ -790,3 +790,56 @@ header {
 	background-color: rgba(80, 89, 112, 0.8);
   }
   
+
+  .selected-row .shining-text {
+    position: relative;
+    display: inline-block;
+    color: white; /* Gold color */
+    z-index: 0; /* Set z-index to 0 to allow stars to appear behind or in front */
+    text-shadow: 0 0 15px rgba(255, 215, 0, 1);
+  }
+  
+  .star {
+    position: absolute;
+    width: 60px; /* Base size, adjustable via JavaScript */
+    height: 60px;
+    background-color: transparent; /* Transparent because we'll use pseudo-elements */
+    opacity: 0;
+    animation: twinkle 3s infinite;
+     clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+  }
+
+  .shining-text.not-selected {
+    --twinkle-animation: none;
+  }
+  
+  
+  .star::before,
+  .star::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ffd700; /* Gold color */
+  }
+  
+  .star::before {
+    transform: rotate(45deg);
+  }
+  
+  .star::after {
+    transform: rotate(-45deg);
+  }
+  
+  @keyframes twinkle {
+    0%, 25%, 100% {
+      opacity: 0;
+      transform: scale(0.1) rotate(0deg);
+    }
+    12.5% {
+      opacity: 1;
+      transform: scale(1) rotate(45deg);
+    }
+  }
