@@ -1,6 +1,7 @@
 module account::protocol_test {
     use std::signer;
     use account::entry_positions_manager;
+    use account::exit_positions_manager;
     use account::mock_lending;
     use account::storage;
     use account::coin::{Self, USDC, USDT, WBTC, STAPT};
@@ -178,4 +179,98 @@ module account::protocol_test {
         print(&p2psa);
         print(&p2pba);
     }
+
+    #[
+        test(
+            admin = @account,
+            user1 = @0x1001,
+            user2 = @0x1002,
+            user3 = @0x1003,
+            user4 = @0x1004,
+            aptos_framework = @aptos_framework
+        )
+    ]
+    public fun test_withdraw(
+        admin: &signer,
+        user1: &signer,
+        user2: &signer,
+        user3: &signer,
+        user4: &signer,
+        aptos_framework: &signer
+    ) {
+        test_init(admin, user1, aptos_framework);
+        init_and_mint_coin(user2);
+        init_and_mint_coin(user3);
+        init_and_mint_coin(user4);
+    
+        // user1 supply to pool
+        entry_positions_manager::supply<USDT>(
+            user1, signer::address_of(user1), 1000000, 100
+        );
+
+        entry_positions_manager::supply<USDT>(
+            user2, signer::address_of(user2), 3000000, 100
+        );
+
+        entry_positions_manager::supply<USDC>(
+            user3, signer::address_of(user3), 10000000, 100
+        );
+
+        entry_positions_manager::borrow<USDT>(
+            user3, 8000000, 100
+        );
+
+        exit_positions_manager::withdraw_logic<USDT>(
+            user1, 500000, signer::address_of(user1), 100
+        );
+
+        print(&std::coin::balance<USDT>(signer::address_of(user1)));
+    }
+    #[
+        test(
+            admin = @account,
+            user1 = @0x1001,
+            user2 = @0x1002,
+            user3 = @0x1003,
+            user4 = @0x1004,
+            aptos_framework = @aptos_framework
+        )
+    ]
+    public fun test_repay(
+        admin: &signer,
+        user1: &signer,
+        user2: &signer,
+        user3: &signer,
+        user4: &signer,
+        aptos_framework: &signer
+    ) {
+        test_init(admin, user1, aptos_framework);
+        init_and_mint_coin(user2);
+        init_and_mint_coin(user3);
+        init_and_mint_coin(user4);
+    
+        // user1 supply to pool
+        entry_positions_manager::supply<USDT>(
+            user1, signer::address_of(user1), 1000000, 100
+        );
+
+        entry_positions_manager::supply<USDT>(
+            user2, signer::address_of(user2), 3000000, 100
+        );
+
+        entry_positions_manager::supply<USDC>(
+            user3, signer::address_of(user3), 10000000, 100
+        );
+
+        entry_positions_manager::borrow<USDT>(
+            user3, 8000000, 100
+        );
+
+        exit_positions_manager::repay_logic<USDT>(
+            user3, signer::address_of(user3), 5000000, 100
+        );
+
+        print(&std::coin::balance<USDT>(signer::address_of(user3)));
+    }
+
 }
