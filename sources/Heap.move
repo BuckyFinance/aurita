@@ -134,7 +134,6 @@ module account::heap_ds {
         // swapped amount in the heap -> restore the invariant
         if (index <= heap.sorted_size) {
             if (value > get_account(heap, index).value) {
-                print(&string::utf8(b"shift down"));
                 shift_down(heap, index);
             } else {
                 shift_up(heap, index);
@@ -177,6 +176,9 @@ module account::heap_ds {
             &mut heap.accounts, ((index - 1) as u64)
         );
         *old_account = account;
+
+        let account_index = smart_table::borrow_mut(&mut heap.indexes, account.user);
+        *account_index = index;
     }
 
     fun set_account_value(heap: &mut HeapArray, index: u256, value: u256) {
@@ -269,12 +271,12 @@ module account::heap_ds {
         update(&mut v.heap_array, @0x1, 50, 0, 10);
         
         assert!(*smart_table::borrow(&v.heap_array.indexes, @0x2) == 2, 101);
-        assert!(*smart_table::borrow(&v.heap_array.indexes, @0x3) == 3, 102);
+        assert!(*smart_table::borrow(&v.heap_array.indexes, @0x3) == 1, 102);
 
         assert!(get_head(&v.heap_array) == @0x3, 101);
 
-        update(&mut v.heap_array, @0x3, 20, 0, 10);
+        update(&mut v.heap_array, @0x3, 30, 0, 10);
 
-        // assert!(get_head(&v.heap_array) == @0x2, 102);
+        assert!(get_head(&v.heap_array) == @0x2, 102);
     }
 }
