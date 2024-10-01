@@ -72,7 +72,17 @@ module account::mock_lending {
 
     public entry fun create_stapt_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 22300 * BASE_12, 49400 * BASE_12);
+        create_market(coin_type, 38700 * BASE_12, 56100 * BASE_12);
+    }
+    
+    public entry fun create_weth_market<CoinType>() acquires MarketRecord {
+        let coin_type = type_of<CoinType>();
+        create_market(coin_type, 3000 * BASE_12, 18200 * BASE_12);
+    }
+
+    public entry fun create_cake_market<CoinType>() acquires MarketRecord {
+        let coin_type = type_of<CoinType>();
+        create_market(coin_type, 16900 * BASE_12, 52300 * BASE_12);
     }
 
     public fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {

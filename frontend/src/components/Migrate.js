@@ -20,6 +20,8 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import ShiningText from "./ShiningText";
+
 function Migrate(){
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,6 +84,44 @@ function Migrate(){
             : [...prevSelected, id]
         );
       };
+
+      const [stars, setStars] = useState([]);
+
+      useEffect(() => {
+        const numStars = 6; // Number of stars
+        const newStars = [];
+    
+        for (let i = 0; i < numStars; i++) {
+          // Random size between 50px and 80px
+          const size = Math.floor(Math.random() * 31) + 50; // 50 to 80px
+    
+          // Random position within the parent element
+          const top = Math.floor(Math.random() * 80); // Limit to 80% to avoid overflow
+          const left = Math.floor(Math.random() * 80); // Limit to 80%
+    
+          // Random animation delay between 0 and 3 seconds
+          const delay = (Math.random() * 3).toFixed(2);
+    
+          // Random z-index to place star in front of or behind the text
+          const zIndex = Math.random() < 0.5 ? -1 : 1;
+    
+          // Random initial rotation angle between 0deg and 360deg
+          const rotation = Math.floor(Math.random() * 361); // 0 to 360 degrees
+    
+          // Create a star object with the generated properties
+          newStars.push({
+            id: i,
+            size,
+            top,
+            left,
+            delay,
+            zIndex,
+            rotation,
+          });
+        }
+    
+        setStars(newStars);
+      }, []); // Empty dependency array to run once on mount
     
     return (
         <>
@@ -144,7 +184,9 @@ function Migrate(){
                                 <TableRow >
                                     <TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Assets</TableCell>
                                     <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Amount</TableCell>
+                                    <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Pool APY</TableCell>
                                     <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">P2P APY</TableCell>
+
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -168,8 +210,11 @@ function Migrate(){
                                         </div>
                                     </TableCell>
                                     <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">100.00</TableCell>
-                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{borderTopRightRadius: '10px',
-                                        borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16}} align="left">100.00%</TableCell>
+                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">100.00%</TableCell>
+                                    <TableCell className={[selectedRows.includes(index) ? "selected-row" : "not-selected"].join(' ')} style={{borderTopRightRadius: '10px',
+                                        borderBottomRightRadius: '10px', fontFamily: 'Kanit', fontSize: 16}} align="left">
+                                            <ShiningText isSelected={selectedRows.includes(index) ? true : false} text="100.00%"/>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                             </TableBody>

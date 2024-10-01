@@ -1,5 +1,5 @@
 module account::utils {
-    use account::coin::{USDC, USDT, WBTC, STAPT};
+    use account::coin::{USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use account::storage;
     use std::vector;
     use aptos_std::type_info::{TypeInfo, type_of};
@@ -66,11 +66,23 @@ module account::utils {
         };
 
         if (coin_type == type_of<WBTC>()) {
-            asset_price = 60000000000 * BASE_12;
+            asset_price = 63559000000 * BASE_12;
         };
 
         if (coin_type == type_of<STAPT>()) {
-            asset_price == 6270000 * BASE_12;
+            asset_price == 8640000 * BASE_12;
+        };
+
+        if (coin_type == type_of<APT>()) {
+            asset_price == 7940000 * BASE_12;
+        };
+
+        if(coin_type == type_of<WETH>()) {
+            asset_price == 2626000000 * BASE_12;
+        };
+
+        if(coin_type == type_of<CAKE>()) {
+            asset_price == 2050000 * BASE_12;
         };
 
         asset_price
@@ -90,6 +102,15 @@ module account::utils {
             user_addr, amount_withdrawn, amount_borrowed, market_coin
         );
         calculate_liquidity_for_each_market<STAPT>(
+            user_addr, amount_withdrawn, amount_borrowed, market_coin
+        );
+        calculate_liquidity_for_each_market<APT>(
+            user_addr, amount_withdrawn, amount_borrowed, market_coin
+        );
+        calculate_liquidity_for_each_market<WETH>(
+            user_addr, amount_withdrawn, amount_borrowed, market_coin
+        );
+        calculate_liquidity_for_each_market<CAKE>(
             user_addr, amount_withdrawn, amount_borrowed, market_coin
         );
         let liquidity_data = borrow_global<LiquidityData>(@account);
