@@ -37,6 +37,10 @@ module account::storage {
         market_created_list: vector<TypeInfo>
     }
 
+    struct UserPositions has key {
+        positions_created_list: vector<TypeInfo>,
+    }
+
     struct SupplyBalance has key, store {
         in_p2p: u256,
         on_pool: u256
@@ -159,6 +163,26 @@ module account::storage {
             }
         );
     }
+
+    public fun is_position_open(sender_addr: address): bool {
+        exists<UserPositions>(sender_addr)
+    }
+
+    public fun open_position(sender: &signer) {
+        move_to(sender, UserPositions {
+            positions_created_list: vector::empty(),
+        });
+    }
+
+    public fun add_user_position<CoinType>(sender_addr: address) acquires UserPositions {
+        let positions_created_list = &mut borrow_global_mut<UserPositions>(sender_addr).positions_created_list;
+        let coin_type = type_of<CoinType>();
+        let is_position_exit = vector::contains(positions_created_list, &coin_type);
+        if(is_position_exit == false) {
+            vector::push_back(positions_created_list, coin_type);
+        };
+    }
+    
 
     public fun set_index<CoinType>(
         last_update_timestamp: u64, pool_supply_index: u256, pool_borrow_index: u256
@@ -318,6 +342,12 @@ module account::storage {
         let market_created_list =
             borrow_global<MarketCreated>(@account).market_created_list;
         market_created_list
+    }
+
+    #[view]
+    public fun get_all_user_position(sender_addr: address): vector<TypeInfo> acquires UserPositions {
+        let positions_created_list = borrow_global<UserPositions>(sender_addr).positions_created_list;
+        positions_created_list
     }
 
     #[view]

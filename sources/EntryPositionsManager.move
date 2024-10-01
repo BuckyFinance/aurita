@@ -34,6 +34,10 @@ module account::entry_positions_manager {
         market_id: u64,
     ) {
         let user_addr = signer::address_of(user);
+        if(storage::is_position_open(user_addr) == false) {
+            storage::open_position(user);
+        };
+        storage::add_user_position<CoinType>(user_addr);
         assert!(amount > 0, EAMOUNT_ZERO);
 
         let (reserveFactor, p2pCursor) = storage::get_market<CoinType>();
