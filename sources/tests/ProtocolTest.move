@@ -4,7 +4,7 @@ module account::protocol_test {
     use account::exit_positions_manager;
     use account::mock_lending;
     use account::storage;
-    use account::coin::{Self, USDC, USDT, WBTC, STAPT};
+    use account::coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use aptos_framework::timestamp;
     use std::debug::print;
     use account::utils;
@@ -21,11 +21,17 @@ module account::protocol_test {
         coin::init<USDC>(sender);
         coin::init<WBTC>(sender);
         coin::init<STAPT>(sender);
+        coin::init<APT>(sender);
+        coin::init<WETH>(sender);
+        coin::init<CAKE>(sender);
 
         coin::mint<USDT>(sender_addr, INITIAL_COIN);
         coin::mint<USDC>(sender_addr, INITIAL_COIN);
         coin::mint<WBTC>(sender_addr, INITIAL_COIN);
         coin::mint<STAPT>(sender_addr, INITIAL_COIN);
+        coin::mint<APT>(sender_addr, INITIAL_COIN);
+        coin::mint<WETH>(sender_addr, INITIAL_COIN);
+        coin::mint<CAKE>(sender_addr, INITIAL_COIN);
     }
 
     #[test_only]
@@ -53,14 +59,24 @@ module account::protocol_test {
         mock_lending::admin_add_pool<USDC>(admin);
         mock_lending::admin_add_pool<WBTC>(admin);
         mock_lending::admin_add_pool<STAPT>(admin);
+        mock_lending::admin_add_pool<APT>(admin);
+        mock_lending::admin_add_pool<WETH>(admin);
+        mock_lending::admin_add_pool<CAKE>(admin);
         mock_lending::create_usdt_market<USDT>();
         mock_lending::create_usdc_market<USDC>();
         mock_lending::create_wbtc_market<WBTC>();
         mock_lending::create_stapt_market<STAPT>();
+        mock_lending::create_apt_market<APT>();
+        mock_lending::create_weth_market<WETH>();
+        mock_lending::create_cake_market<CAKE>();
+
         mock_lending::deposit<USDT>(admin, INITIAL_COIN_MOCK_POOL);
         mock_lending::deposit<USDC>(admin, INITIAL_COIN_MOCK_POOL);
         mock_lending::deposit<WBTC>(admin, INITIAL_COIN_MOCK_POOL);
         mock_lending::deposit<STAPT>(admin, INITIAL_COIN_MOCK_POOL);
+        mock_lending::deposit<APT>(admin, INITIAL_COIN_MOCK_POOL);
+        mock_lending::deposit<WETH>(admin, INITIAL_COIN_MOCK_POOL);
+        mock_lending::deposit<CAKE>(admin, INITIAL_COIN_MOCK_POOL);
 
         // initialize storage
         storage::init_module_for_tests(admin);
@@ -68,6 +84,9 @@ module account::protocol_test {
         storage::create_market<USDC>(admin, 0, 0);
         storage::create_market<WBTC>(admin, 0, 0);
         storage::create_market<STAPT>(admin, 0, 0);
+        storage::create_market<APT>(admin, 0, 0);
+        storage::create_market<WETH>(admin, 0, 0);
+        storage::create_market<CAKE>(admin, 0, 0);
 
         utils::init_module_for_tests(admin);
     }
