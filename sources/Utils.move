@@ -3,7 +3,8 @@ module account::utils {
     use account::storage;
     use std::vector;
     use aptos_std::type_info::{TypeInfo, type_of};
-    use account::mock_lending;
+    use account::mock_aries;
+    use account::mock_echelon;
     use account::interest_rate_manager;
 
     const BASE_12: u256 = 1000000000000; // 10^12
@@ -89,29 +90,29 @@ module account::utils {
     }
 
     public fun get_liquidity_data<CoinType>(
-        user_addr: address, amount_withdrawn: u256, amount_borrowed: u256
+        user_addr: address, amount_withdrawn: u256, amount_borrowed: u256, market_id: u64
     ): (u256, u256, u256, u256) acquires LiquidityData {
         let market_coin = type_of<CoinType>();
         calculate_liquidity_for_each_market<USDC>(
-            user_addr, amount_withdrawn, amount_borrowed, market_coin
+            user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         calculate_liquidity_for_each_market<USDT>(
-            user_addr, amount_withdrawn, amount_borrowed, market_coin
+            user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         calculate_liquidity_for_each_market<WBTC>(
-            user_addr, amount_withdrawn, amount_borrowed, market_coin
+            user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         calculate_liquidity_for_each_market<STAPT>(
-            user_addr, amount_withdrawn, amount_borrowed, market_coin
+            user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         calculate_liquidity_for_each_market<APT>(
-            user_addr, amount_withdrawn, amount_borrowed, market_coin
+            user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         calculate_liquidity_for_each_market<WETH>(
-            user_addr, amount_withdrawn, amount_borrowed, market_coin
+            user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         calculate_liquidity_for_each_market<CAKE>(
-            user_addr, amount_withdrawn, amount_borrowed, market_coin
+            user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         let liquidity_data = borrow_global<LiquidityData>(@account);
         (
@@ -126,13 +127,20 @@ module account::utils {
         user_addr: address,
         amount_withdrawn: u256,
         amount_borrowed: u256,
-        market_coin: TypeInfo
+        market_coin: TypeInfo,
+        market_id: u64,
     ) acquires LiquidityData {
         let underlying_price = get_asset_price<CoinType>();
 
-        interest_rate_manager::update_indexes<CoinType>();
+        interest_rate_manager::update_indexes<CoinType>(market_id);
 
-        let (ltv, liquidation_threshold) = mock_lending::get_market_configuration();
+        let (ltv, liquidation_threshold) = {
+            if (market_id == 0) {
+                mock_aries::get_market_configuration()
+            } else {
+                mock_echelon::get_market_configuration()
+            }
+        };
         let debt = calculate_debt_value<CoinType>(user_addr, underlying_price);
         let collateral = calculate_collateral_value<CoinType>(user_addr, underlying_price);
         let borrowable = collateral * ltv;

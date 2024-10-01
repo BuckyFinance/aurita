@@ -12,19 +12,21 @@ module account::exit_positions_manager {
         sender: &signer,
         amount: u256,
         receiver: address,
-        max_iterations_for_matching: u256
+        max_iterations_for_matching: u256,
+        market_id: u64
     ) {
         let sender_addr = signer::address_of(sender);
-        interest_rate_manager::update_indexes<CoinType>();
+        interest_rate_manager::update_indexes<CoinType>(market_id);
         let total_supply = utils::get_user_supply_balance<CoinType>(sender_addr);
         let to_withdraw = math::min(total_supply, amount);
-        let is_withdraw_allowed = withdraw_allowed<CoinType>(sender_addr, to_withdraw);
+        let is_withdraw_allowed = withdraw_allowed<CoinType>(sender_addr, to_withdraw, market_id);
         if (is_withdraw_allowed) {
             unsafe_withdraw_logic<CoinType>(
                 sender,
                 to_withdraw,
                 receiver,
-                max_iterations_for_matching
+                max_iterations_for_matching,
+                market_id
             );
         };
     }
@@ -33,14 +35,15 @@ module account::exit_positions_manager {
         sender: &signer,
         on_behalf: address,
         amount: u256,
-        max_iterations_for_matching: u256
+        max_iterations_for_matching: u256,
+        market_id: u64
     ) {
         let sender_addr = signer::address_of(sender);
-        interest_rate_manager::update_indexes<CoinType>();
+        interest_rate_manager::update_indexes<CoinType>(market_id);
         let total_borrow = utils::get_user_borrow_balance<CoinType>(sender_addr);
         let to_repay = math::min(total_borrow, amount);
         unsafe_repay_logic<CoinType>(
-            sender, on_behalf, to_repay, max_iterations_for_matching
+            sender, on_behalf, to_repay, max_iterations_for_matching, market_id
         );
     }
 
@@ -48,7 +51,8 @@ module account::exit_positions_manager {
         sender: &signer,
         amount: u256,
         receiver: address,
-        max_iteration: u256
+        max_iteration: u256,
+        market_id: u64,
     ) {
         let sender_addr = signer::address_of(sender);
         let remaining_to_withdraw = amount;
@@ -76,7 +80,7 @@ module account::exit_positions_manager {
                 matching_engine::update_supplier_in_DS<CoinType>(sender_addr);
 
                 // withdraw from pool
-                let coin = pos_utils::withdraw<CoinType>(sender, to_withdraw);
+                let coin = pos_utils::withdraw<CoinType>(sender, to_withdraw, market_id);
                 coin::deposit<CoinType>(signer::address_of(sender), coin);
                 return;
 
@@ -139,7 +143,7 @@ module account::exit_positions_manager {
         };
 
         if (to_withdraw > 0) {
-            let withdraw_coin = pos_utils::withdraw<CoinType>(sender, to_withdraw);
+            let withdraw_coin = pos_utils::withdraw<CoinType>(sender, to_withdraw, market_id);
             coin::merge(&mut total_coin, withdraw_coin);
         };
 
@@ -166,7 +170,7 @@ module account::exit_positions_manager {
                     math::ray_div(remaining_to_withdraw, p2p_borrow_index)
                 );
 
-            let borrow_coin = pos_utils::borrow<CoinType>(sender, remaining_to_withdraw);
+            let borrow_coin = pos_utils::borrow<CoinType>(sender, remaining_to_withdraw, market_id);
             coin::merge(&mut total_coin, borrow_coin);
         };
         storage::set_delta<CoinType>(
@@ -184,7 +188,8 @@ module account::exit_positions_manager {
         sender: &signer,
         on_behalf: address,
         amount: u256,
-        max_iterations_for_matching: u256
+        max_iterations_for_matching: u256,
+        market_id: u64
     ) {
         let sender_addr = signer::address_of(sender);
         let remaining_to_repay = amount;
@@ -210,7 +215,7 @@ module account::exit_positions_manager {
 
             if (remaining_to_repay == 0) {
                 matching_engine::update_borrower_in_DS<CoinType>(on_behalf);
-                pos_utils::repay<CoinType>(sender, to_repay);
+                pos_utils::repay<CoinType>(sender, to_repay, market_id);
                 return;
             }
         };
@@ -291,7 +296,7 @@ module account::exit_positions_manager {
             to_repay = to_repay + matched;
         };
 
-        pos_utils::repay<CoinType>(sender, to_repay);
+        pos_utils::repay<CoinType>(sender, to_repay, market_id);
 
         // breaking withdraw -> demote borrower
         if (remaining_to_repay > 0) {
@@ -316,7 +321,7 @@ module account::exit_positions_manager {
                     math::ray_div(unmatched, p2p_borrow_index)
                 );
 
-            pos_utils::deposit<CoinType>(sender, remaining_to_repay);
+            pos_utils::deposit<CoinType>(sender, remaining_to_repay, market_id);
         };
         storage::set_delta<CoinType>(
             p2p_supply_delta,
@@ -329,10 +334,10 @@ module account::exit_positions_manager {
     // ============================== Helper Function =================================
 
     public fun get_user_health_factor<CoinType>(
-        sender_addr: address, withdrawn_amount: u256
+        sender_addr: address, withdrawn_amount: u256, market_id: u64
     ): u256 {
         let (total_collateral, total_borrowable, total_max_debt, total_debt) =
-            utils::get_liquidity_data<CoinType>(sender_addr, withdrawn_amount, 0);
+            utils::get_liquidity_data<CoinType>(sender_addr, withdrawn_amount, 0, market_id);
         let health_factor = storage::max_u256();
         if (total_debt > 0) {
             health_factor = total_max_debt / total_debt;
@@ -341,10 +346,10 @@ module account::exit_positions_manager {
     }
 
     fun withdraw_allowed<CoinType>(
-        sender_addr: address, withdrawn_amount: u256
+        sender_addr: address, withdrawn_amount: u256, market_id: u64
     ): bool {
         let health_factor =
-            get_user_health_factor<CoinType>(sender_addr, withdrawn_amount);
+            get_user_health_factor<CoinType>(sender_addr, withdrawn_amount, market_id);
         let is_withdraw_allowed =
             (health_factor >= storage::get_health_factor_liquidation_threshold());
         is_withdraw_allowed

@@ -1,4 +1,4 @@
-module account::mock_lending {
+module account::mock_echelon {
     use std::string::{Self, String};
     use std::signer;
     use std::vector;
@@ -8,9 +8,6 @@ module account::mock_lending {
 
     const ERR: u64 = 1000;
     const BASE_12: u256 = 1000000000000;
-
-    friend account::mock_lending_test;
-    friend account::utils;
 
     struct MarketReserve<phantom CoinType> has key {
         reserve: Coin<CoinType>
@@ -52,37 +49,37 @@ module account::mock_lending {
 
     public entry fun create_usdt_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 47000 * BASE_12, 81300 * BASE_12);
+        create_market(coin_type, 36800 * BASE_12, 60700 * BASE_12);
     }
 
     public entry fun create_usdc_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 46600 * BASE_12, 81000 * BASE_12);
+        create_market(coin_type, 35400 * BASE_12, 59500 * BASE_12);
     }
 
     public entry fun create_wbtc_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 9800 * BASE_12, 43400 * BASE_12);
+        create_market(coin_type, 25000 * BASE_12, 127000 * BASE_12);
     }
 
     public entry fun create_apt_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 23800 * BASE_12, 50500 * BASE_12);
+        create_market(coin_type, 15100 * BASE_12, 29300 * BASE_12);
     }
 
     public entry fun create_stapt_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 38700 * BASE_12, 56100 * BASE_12);
+        create_market(coin_type, 92300 * BASE_12, 1200 * BASE_12);
     }
     
     public entry fun create_weth_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 3000 * BASE_12, 18200 * BASE_12);
+        create_market(coin_type, 4800 * BASE_12, 16600 * BASE_12);
     }
 
     public entry fun create_cake_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
-        create_market(coin_type, 16900 * BASE_12, 52300 * BASE_12);
+        create_market(coin_type, 16900 * BASE_12, 52400 * BASE_12);
     }
 
     public fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
