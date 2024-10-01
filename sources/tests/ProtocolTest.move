@@ -220,7 +220,7 @@ module account::protocol_test {
             user3, 8000000, 100
         );
 
-        exit_positions_manager::withdraw_logic<USDT>(
+        exit_positions_manager::withdraw<USDT>(
             user1, 500000, signer::address_of(user1), 100
         );
 
@@ -266,7 +266,7 @@ module account::protocol_test {
             user3, 8000000, 100
         );
 
-        exit_positions_manager::repay_logic<USDT>(
+        exit_positions_manager::repay<USDT>(
             user3, signer::address_of(user3), 5000000, 100
         );
 

@@ -1,7 +1,7 @@
 import { aptos } from "../App.js";
 import { moduleAddress } from "../App.js";
 
-// coinSymbol: USDC, USDT, WBTC, STAPT
+// coinSymbol: USDC, USDT, WBTC, STAPT, APT, WETH, CAKE
 export async function deposit(coinSymbol, userAddress, amount, signAndSubmitTransaction) {
     const coin = `${moduleAddress}::coin::${coinSymbol}`;
     const onBehalfAddress = userAddress;
