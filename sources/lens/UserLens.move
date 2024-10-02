@@ -68,6 +68,34 @@ module account::user_lens {
         health_factor
     }
 
+    #[view]
+    public fun get_user_supply_apy<CoinType>(market_id: u64): u256 {
+        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
+        let (deposit_apy, borrow_apy) = {
+            if(market_id == 0) {
+                mock_aries::get_market_apy<CoinType>()
+            } else {
+                mock_echelon::get_market_apy<CoinType>()
+            }
+        };
+        let p2p_supply_apy = deposit_apy * p2p_supply_index / 1000000000000000000;
+        p2p_supply_apy
+    }
+
+    #[view]
+    public fun get_user_borrow_apy<CoinType>(market_id: u64): u256 {
+        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
+        let (deposit_apy, borrow_apy) = {
+            if(market_id == 0) {
+                mock_aries::get_market_apy<CoinType>()
+            } else {
+                mock_echelon::get_market_apy<CoinType>()
+            }
+        };
+        let p2p_borrow_apy = borrow_apy * p2p_borrow_index / 1000000000000000000;
+        p2p_borrow_apy
+    }
+
     fun get_user_supply_balance(sender_addr: address, coin_type: TypeInfo): u256 {
         if(coin_type == type_of<USDC>()) {
             utils::get_user_supply_balance<USDC>(sender_addr)

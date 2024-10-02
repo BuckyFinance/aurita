@@ -170,6 +170,12 @@ module account::protocol_test {
 
         let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user3));
         assert!(vector::length(&supply_positions_list) == 2, ERR_TEST);
+
+        let p2p_supply_apy = user_lens::get_user_supply_apy<WBTC>(ARIES_MARKET);
+        print(&p2p_supply_apy);
+
+        let p2p_borrow_apy = user_lens::get_user_supply_apy<USDT>(ARIES_MARKET);
+        print(&p2p_borrow_apy);
     }
 
     #[
