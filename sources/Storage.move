@@ -306,8 +306,11 @@ module account::storage {
         };
         let borrow_balance =
             simple_map::borrow_mut<address, BorrowBalance>(borrow_map, &sender_addr);
+        print(&string::utf8(b"Check"));
         borrow_balance.in_p2p = in_p2p;
         borrow_balance.on_pool = on_pool;
+        print(&borrow_balance.in_p2p);
+        print(&borrow_balance.on_pool);
     }
 
     public fun set_max_gas_for_matching<CoinType>(

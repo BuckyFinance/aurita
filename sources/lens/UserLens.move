@@ -1,5 +1,13 @@
 module account::user_lens {
     use account::storage;
+    use account::utils;
+    use account::math;
+    use account::mock_aries;
+    use account::mock_echelon;
+    use account::coin::{USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use std::vector;
+    use std::debug::print;
+    use std::string;
     use aptos_std::type_info::{TypeInfo, type_of};
 
     #[view]
@@ -19,6 +27,109 @@ module account::user_lens {
         let (in_p2p, on_pool) = storage::get_borrow_balance<CoinType>(sender_addr);
         let total_borrow = in_p2p + on_pool;
         total_borrow
+    }
+
+    #[view]
+    public fun get_health_factor(sender_addr: address, market_id: u64): u256 {
+        let positions_created_list = get_all_user_position(sender_addr);
+        let i = 0;
+        let positions_number = vector::length(&positions_created_list);
+        let user_total_max_debt = 0;
+        let user_total_debt = 0;
+        let (ltv, liquidation_threshold) = {
+            if(market_id == 0) {
+                mock_aries::get_market_configuration()
+            } else {
+                mock_echelon::get_market_configuration()
+            }
+        };
+        while(i < positions_number) {
+            let coin_type = vector::borrow(&positions_created_list, (i as u64));
+            let (collateral, debt) = get_liquidity_data(sender_addr, *coin_type , market_id);
+            user_total_max_debt = user_total_max_debt + math::ray_mul(
+                collateral, liquidation_threshold
+            );
+            user_total_debt = user_total_debt + debt;
+            print(&debt);
+            i = i + 1;
+        };
+        let health_factor = storage::max_u256();
+        print(&user_total_max_debt);
+        print(&user_total_debt);
+        if(user_total_debt > 0) {
+            health_factor = user_total_max_debt / user_total_debt;
+        };
+        health_factor
+    }
+
+    fun get_user_supply_balance(sender_addr: address, coin_type: TypeInfo): u256 {
+        if(coin_type == type_of<USDC>()) {
+            utils::get_user_supply_balance<USDC>(sender_addr)
+        } else if(coin_type == type_of<USDT>()) {
+            utils::get_user_supply_balance<USDT>(sender_addr)
+        } else if(coin_type == type_of<WBTC>()) {
+            utils::get_user_supply_balance<WBTC>(sender_addr)
+        } else if(coin_type == type_of<STAPT>()) {
+            utils::get_user_supply_balance<STAPT>(sender_addr)
+        } else if(coin_type == type_of<APT>()) {
+            utils::get_user_supply_balance<APT>(sender_addr)
+        } else if(coin_type == type_of<WETH>()) {
+            utils::get_user_supply_balance<WETH>(sender_addr)
+        } else if(coin_type == type_of<CAKE>()) {
+            utils::get_user_supply_balance<CAKE>(sender_addr)
+        } else {
+            0
+        }
+    } 
+
+    fun get_user_borrow_balance(sender_addr: address, coin_type: TypeInfo): u256 {
+        if(coin_type == type_of<USDC>()) {
+            utils::get_user_borrow_balance<USDC>(sender_addr)
+        } else if(coin_type == type_of<USDT>()) {
+            utils::get_user_borrow_balance<USDT>(sender_addr)
+        } else if(coin_type == type_of<WBTC>()) {
+            utils::get_user_borrow_balance<WBTC>(sender_addr)
+        } else if(coin_type == type_of<STAPT>()) {
+            utils::get_user_borrow_balance<STAPT>(sender_addr)
+        } else if(coin_type == type_of<APT>()) {
+            utils::get_user_borrow_balance<APT>(sender_addr)
+        } else if(coin_type == type_of<WETH>()) {
+            utils::get_user_borrow_balance<WETH>(sender_addr)
+        } else if(coin_type == type_of<CAKE>()) {
+            utils::get_user_borrow_balance<CAKE>(sender_addr)
+        } else {
+            0 as u256
+        }
+    } 
+
+    fun get_underlying_price(coin_type: TypeInfo): u256 {
+        if(coin_type == type_of<USDC>()) {
+            utils::get_asset_price<USDC>()
+        } else if(coin_type == type_of<USDT>()) {
+            utils::get_asset_price<USDT>()
+        } else if(coin_type == type_of<WBTC>()) {
+            utils::get_asset_price<WBTC>()
+        } else if(coin_type == type_of<STAPT>()) {
+            utils::get_asset_price<STAPT>()
+        } else if(coin_type == type_of<APT>()) {
+            utils::get_asset_price<APT>()
+        } else if(coin_type == type_of<WETH>()) {
+            utils::get_asset_price<WETH>()
+        } else if(coin_type == type_of<CAKE>()) {
+            utils::get_asset_price<CAKE>()
+        } else {
+            0
+        }
+    }
+
+    fun get_liquidity_data(sender_addr: address, coin_type: TypeInfo, market_id: u64): (u256, u256) {
+        let user_supply_balance = get_user_supply_balance(sender_addr, coin_type);
+        let user_borrow_balance = get_user_borrow_balance(sender_addr, coin_type);
+        let underlying_price = get_underlying_price(coin_type);
+        print(&user_borrow_balance);
+        let debt = user_borrow_balance * underlying_price;
+        let collateral = user_supply_balance * underlying_price;
+        (collateral, debt)
     }
 
 }

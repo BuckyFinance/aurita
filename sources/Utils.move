@@ -2,6 +2,7 @@ module account::utils {
     use account::coin::{USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use account::storage;
     use std::vector;
+    use std::debug::print;
     use aptos_std::type_info::{TypeInfo, type_of};
     use account::mock_aries;
     use account::mock_echelon;
@@ -115,12 +116,32 @@ module account::utils {
             user_addr, amount_withdrawn, amount_borrowed, market_coin, market_id
         );
         let liquidity_data = borrow_global<LiquidityData>(@account);
-        (
+        let (
+            total_collateral,
+            total_borrowable,
+            total_max_debt,
+            total_debt
+        ) = (
             liquidity_data.total_collateral,
             liquidity_data.total_borrowable,
             liquidity_data.total_max_debt,
             liquidity_data.total_debt
+        );
+        remove_liquidity_data();
+        (
+            total_collateral,
+            total_borrowable,
+            total_max_debt,
+            total_debt
         )
+    }
+
+    fun remove_liquidity_data() acquires LiquidityData {
+        let liquidity_data = borrow_global_mut<LiquidityData>(@account);
+        liquidity_data.total_collateral = 0;
+        liquidity_data.total_borrowable = 0;
+        liquidity_data.total_max_debt = 0;
+        liquidity_data.total_debt = 0;
     }
 
     public fun calculate_liquidity_for_each_market<CoinType>(
