@@ -12,7 +12,7 @@ module account::storage {
     const INITIAL_HEAP_SIZE: u256 = 100;
 
     friend account::utils;
-
+    
     struct ProtocolHeap<phantom CoinType> has key {
         suppliers_in_p2p: HeapArray,
         suppliers_on_pool: HeapArray,
@@ -38,7 +38,9 @@ module account::storage {
     }
 
     struct UserPositions has key {
-        positions_created_list: vector<TypeInfo>,
+        all_positions_created: vector<TypeInfo>,
+        supply_positions_list: vector<TypeInfo>,
+        borrow_positions_list: vector<TypeInfo>,
     }
 
     struct SupplyBalance has key, store {
@@ -170,16 +172,41 @@ module account::storage {
 
     public fun open_position(sender: &signer) {
         move_to(sender, UserPositions {
-            positions_created_list: vector::empty(),
+            all_positions_created: vector::empty(),
+            supply_positions_list: vector::empty(),
+            borrow_positions_list: vector::empty(),
         });
     }
 
-    public fun add_user_position<CoinType>(sender_addr: address) acquires UserPositions {
-        let positions_created_list = &mut borrow_global_mut<UserPositions>(sender_addr).positions_created_list;
+    public fun add_supply_positions<CoinType>(sender_addr: address) acquires UserPositions {
+        let user_poistions = borrow_global_mut<UserPositions>(sender_addr);
+        let supply_positions_list = &mut user_poistions.supply_positions_list;
         let coin_type = type_of<CoinType>();
-        let is_position_exit = vector::contains(positions_created_list, &coin_type);
+        let is_position_exit = vector::contains(supply_positions_list, &coin_type);
         if(is_position_exit == false) {
-            vector::push_back(positions_created_list, coin_type);
+            vector::push_back(supply_positions_list, coin_type);
+        };
+
+        let all_positions_created = &mut user_poistions.all_positions_created;
+        let is_position_exit = vector::contains(all_positions_created, &coin_type);
+        if(is_position_exit == false) {
+            vector::push_back(all_positions_created, coin_type);
+        };
+    }
+
+    public fun add_borrow_positions<CoinType>(sender_addr: address) acquires UserPositions {
+        let user_poistions = borrow_global_mut<UserPositions>(sender_addr);
+        let borrow_positions_list = &mut user_poistions.borrow_positions_list;
+        let coin_type = type_of<CoinType>();
+        let is_position_exit = vector::contains(borrow_positions_list, &coin_type);
+        if(is_position_exit == false) {
+            vector::push_back(borrow_positions_list, coin_type);
+        };
+
+        let all_positions_created = &mut user_poistions.all_positions_created;
+        let is_position_exit = vector::contains(all_positions_created, &coin_type);
+        if(is_position_exit == false) {
+            vector::push_back(all_positions_created, coin_type);
         };
     }
     
@@ -306,11 +333,8 @@ module account::storage {
         };
         let borrow_balance =
             simple_map::borrow_mut<address, BorrowBalance>(borrow_map, &sender_addr);
-        print(&string::utf8(b"Check"));
         borrow_balance.in_p2p = in_p2p;
         borrow_balance.on_pool = on_pool;
-        print(&borrow_balance.in_p2p);
-        print(&borrow_balance.on_pool);
     }
 
     public fun set_max_gas_for_matching<CoinType>(
@@ -348,9 +372,21 @@ module account::storage {
     }
 
     #[view]
-    public fun get_all_user_position(sender_addr: address): vector<TypeInfo> acquires UserPositions {
-        let positions_created_list = borrow_global<UserPositions>(sender_addr).positions_created_list;
-        positions_created_list
+    public fun get_all_postions_created(sender_addr: address): vector<TypeInfo> acquires UserPositions {
+        let all_positions_created = borrow_global<UserPositions>(sender_addr).all_positions_created;
+        all_positions_created
+    }
+
+    #[view]
+    public fun get_supply_positions(sender_addr: address): vector<TypeInfo> acquires UserPositions {
+        let supply_positions_list = borrow_global<UserPositions>(sender_addr).supply_positions_list;
+        supply_positions_list
+    }
+
+    #[view]
+    public fun get_borrow_positions(sender_addr: address): vector<TypeInfo> acquires UserPositions {
+        let borrow_positions_list = borrow_global<UserPositions>(sender_addr).borrow_positions_list;
+        borrow_positions_list
     }
 
     #[view]

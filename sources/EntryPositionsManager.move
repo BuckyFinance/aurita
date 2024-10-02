@@ -37,7 +37,7 @@ module account::entry_positions_manager {
         if(storage::is_position_open(user_addr) == false) {
             storage::open_position(user);
         };
-        storage::add_user_position<CoinType>(user_addr);
+        storage::add_supply_positions<CoinType>(user_addr);
         assert!(amount > 0, EAMOUNT_ZERO);
 
         let (reserveFactor, p2pCursor) = storage::get_market<CoinType>();
@@ -120,6 +120,7 @@ module account::entry_positions_manager {
         user: &signer, amount: u256, iterations: u256, market_id: u64
     ) {
         let user_addr = signer::address_of(user);
+        storage::add_borrow_positions<CoinType>(user_addr);
         assert!(amount > 0, EAMOUNT_ZERO);
 
         let (reserveFactor, p2pCursor) = storage::get_market<CoinType>();

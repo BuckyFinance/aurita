@@ -11,8 +11,13 @@ module account::user_lens {
     use aptos_std::type_info::{TypeInfo, type_of};
 
     #[view]
-    public fun get_all_user_position(sender_addr: address): vector<TypeInfo> {
-        storage::get_all_user_position(sender_addr)
+    public fun get_supply_positions(sender_addr: address): vector<TypeInfo> {
+        storage::get_supply_positions(sender_addr)
+    }
+
+    #[view]
+    public fun get_borrow_positions(sender_addr: address): vector<TypeInfo> {
+        storage::get_borrow_positions(sender_addr)
     }
 
     #[view]
@@ -31,9 +36,9 @@ module account::user_lens {
 
     #[view]
     public fun get_health_factor(sender_addr: address, market_id: u64): u256 {
-        let positions_created_list = get_all_user_position(sender_addr);
+        let all_positions_created = storage::get_all_postions_created(sender_addr);
         let i = 0;
-        let positions_number = vector::length(&positions_created_list);
+        let positions_number = vector::length(&all_positions_created);
         let user_total_max_debt = 0;
         let user_total_debt = 0;
         let (ltv, liquidation_threshold) = {
@@ -44,18 +49,19 @@ module account::user_lens {
             }
         };
         while(i < positions_number) {
-            let coin_type = vector::borrow(&positions_created_list, (i as u64));
+            let coin_type = vector::borrow(&all_positions_created, (i as u64));
             let (collateral, debt) = get_liquidity_data(sender_addr, *coin_type , market_id);
             user_total_max_debt = user_total_max_debt + math::ray_mul(
                 collateral, liquidation_threshold
             );
             user_total_debt = user_total_debt + debt;
-            print(&debt);
+            // print(&debt);
             i = i + 1;
         };
+
         let health_factor = storage::max_u256();
-        print(&user_total_max_debt);
-        print(&user_total_debt);
+        // print(&user_total_max_debt);
+        // print(&user_total_debt);
         if(user_total_debt > 0) {
             health_factor = user_total_max_debt / user_total_debt;
         };
@@ -122,11 +128,12 @@ module account::user_lens {
         }
     }
 
+    // need to fix coin type when borrow
     fun get_liquidity_data(sender_addr: address, coin_type: TypeInfo, market_id: u64): (u256, u256) {
         let user_supply_balance = get_user_supply_balance(sender_addr, coin_type);
         let user_borrow_balance = get_user_borrow_balance(sender_addr, coin_type);
         let underlying_price = get_underlying_price(coin_type);
-        print(&user_borrow_balance);
+        // print(&user_borrow_balance);
         let debt = user_borrow_balance * underlying_price;
         let collateral = user_supply_balance * underlying_price;
         (collateral, debt)

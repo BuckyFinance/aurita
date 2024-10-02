@@ -3,6 +3,7 @@ module account::utils {
     use account::storage;
     use std::vector;
     use std::debug::print;
+    use std::string;
     use aptos_std::type_info::{TypeInfo, type_of};
     use account::mock_aries;
     use account::mock_echelon;

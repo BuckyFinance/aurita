@@ -1,5 +1,6 @@
 module account::protocol_test {
     use std::signer;
+    use std::vector;
     use account::entry_positions_manager;
     use account::exit_positions_manager;
     use account::mock_aries;
@@ -11,6 +12,7 @@ module account::protocol_test {
     use account::utils;
     use std::string;
 
+    const ERR_TEST: u64 = 1000;
     const INITIAL_COIN: u64 = 10000000000000; // 10^7
     const INITIAL_COIN_MOCK_POOL: u256 = 1000000000000; // 10^6
     const ARIES_MARKET: u64 = 0;
@@ -93,20 +95,20 @@ module account::protocol_test {
         utils::init_module_for_tests(admin);
     }
 
-    // #[test(admin = @account, user1 = @0x1001, aptos_framework = @aptos_framework)]
-    // public fun test_supply(
-    //     admin: &signer, user1: &signer, aptos_framework: &signer
-    // ) {
-    //     test_init(admin, user1, aptos_framework);
+    #[test(admin = @account, user1 = @0x1001, aptos_framework = @aptos_framework)]
+    public fun test_supply(
+        admin: &signer, user1: &signer, aptos_framework: &signer
+    ) {
+        test_init(admin, user1, aptos_framework);
 
-    //     // user1 supply to pool
-    //     entry_positions_manager::supply<USDT>(
-    //         user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
-    //     );
-    //     let (p2p_supply, p2p_borrow) = storage::get_p2p_index<USDT>();
-    //     // print(&p2p_supply);
-    //     // print(&p2p_borrow);
-    // }
+        // user1 supply to pool
+        entry_positions_manager::supply<USDT>(
+            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+        );
+        let (p2p_supply, p2p_borrow) = storage::get_p2p_index<USDT>();
+        // print(&p2p_supply);
+        // print(&p2p_borrow);
+    }
 
     #[
         test(
@@ -145,6 +147,10 @@ module account::protocol_test {
             user3, signer::address_of(user3), 3000000, 100, ARIES_MARKET
         );
 
+        entry_positions_manager::supply<CAKE>(
+            user3, signer::address_of(user3), 3000000, 100, ARIES_MARKET
+        );
+
         entry_positions_manager::supply<WBTC>(
             user4, signer::address_of(user4), 10000000, 100, ARIES_MARKET
         );
@@ -156,146 +162,154 @@ module account::protocol_test {
         let hf = user_lens::get_health_factor(signer::address_of(user4), ARIES_MARKET);
         print(&string::utf8(b"Health Factor: "));
         print(&hf);
+
+        let borrow_positions_list = user_lens::get_borrow_positions(signer::address_of(user4));
+        let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user4));
+        assert!(vector::length(&borrow_positions_list) == 1, ERR_TEST);
+        assert!(vector::length(&supply_positions_list) == 1, ERR_TEST);
+
+        let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user3));
+        assert!(vector::length(&supply_positions_list) == 2, ERR_TEST);
     }
 
-    // #[
-    //     test(
-    //         admin = @account,
-    //         user1 = @0x1001,
-    //         user2 = @0x1002,
-    //         user3 = @0x1003,
-    //         user4 = @0x1004,
-    //         aptos_framework = @aptos_framework
-    //     )
-    // ]
-    // public fun test_borrow_before_supply(
-    //     admin: &signer,
-    //     user1: &signer,
-    //     user2: &signer,
-    //     user3: &signer,
-    //     user4: &signer,
-    //     aptos_framework: &signer
-    // ) {
-    //     test_init(admin, user1, aptos_framework);
-    //     init_and_mint_coin(user2);
-    //     init_and_mint_coin(user3);
-    //     init_and_mint_coin(user4);
+    #[
+        test(
+            admin = @account,
+            user1 = @0x1001,
+            user2 = @0x1002,
+            user3 = @0x1003,
+            user4 = @0x1004,
+            aptos_framework = @aptos_framework
+        )
+    ]
+    public fun test_borrow_before_supply(
+        admin: &signer,
+        user1: &signer,
+        user2: &signer,
+        user3: &signer,
+        user4: &signer,
+        aptos_framework: &signer
+    ) {
+        test_init(admin, user1, aptos_framework);
+        init_and_mint_coin(user2);
+        init_and_mint_coin(user3);
+        init_and_mint_coin(user4);
     
-    //     // user1 supply to pool
-    //     entry_positions_manager::supply<WBTC>(
-    //         user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
-    //     );
+        // user1 supply to pool
+        entry_positions_manager::supply<WBTC>(
+            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::supply<USDC>(
-    //         user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::supply<USDC>(
+            user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::borrow<USDT>(user1, 1000000, 100, ARIES_MARKET);
-    //     // print(&std::coin::balance<USDT>(signer::address_of(user1)));
+        entry_positions_manager::borrow<USDT>(user1, 1000000, 100, ARIES_MARKET);
+        // print(&std::coin::balance<USDT>(signer::address_of(user1)));
 
-    //     entry_positions_manager::borrow<USDT>(user2, 2000000, 100, ARIES_MARKET);
-    //     // print(&std::coin::balance<USDT>(signer::address_of(user2)));
+        entry_positions_manager::borrow<USDT>(user2, 2000000, 100, ARIES_MARKET);
+        // print(&std::coin::balance<USDT>(signer::address_of(user2)));
 
-    //     entry_positions_manager::supply<USDT>(
-    //         user3, signer::address_of(user3), 3500000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::supply<USDT>(
+            user3, signer::address_of(user3), 3500000, 100, ARIES_MARKET
+        );
 
-    //     let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
-    //     // print(&p2psa);
-    //     // print(&p2pba);
-    // }
+        let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
+        // print(&p2psa);
+        // print(&p2pba);
+    }
 
-    // #[
-    //     test(
-    //         admin = @account,
-    //         user1 = @0x1001,
-    //         user2 = @0x1002,
-    //         user3 = @0x1003,
-    //         user4 = @0x1004,
-    //         aptos_framework = @aptos_framework
-    //     )
-    // ]
-    // public fun test_withdraw(
-    //     admin: &signer,
-    //     user1: &signer,
-    //     user2: &signer,
-    //     user3: &signer,
-    //     user4: &signer,
-    //     aptos_framework: &signer
-    // ) {
-    //     test_init(admin, user1, aptos_framework);
-    //     init_and_mint_coin(user2);
-    //     init_and_mint_coin(user3);
-    //     init_and_mint_coin(user4);
+    #[
+        test(
+            admin = @account,
+            user1 = @0x1001,
+            user2 = @0x1002,
+            user3 = @0x1003,
+            user4 = @0x1004,
+            aptos_framework = @aptos_framework
+        )
+    ]
+    public fun test_withdraw(
+        admin: &signer,
+        user1: &signer,
+        user2: &signer,
+        user3: &signer,
+        user4: &signer,
+        aptos_framework: &signer
+    ) {
+        test_init(admin, user1, aptos_framework);
+        init_and_mint_coin(user2);
+        init_and_mint_coin(user3);
+        init_and_mint_coin(user4);
     
-    //     // user1 supply to pool
-    //     entry_positions_manager::supply<USDT>(
-    //         user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
-    //     );
+        // user1 supply to pool
+        entry_positions_manager::supply<USDT>(
+            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::supply<USDT>(
-    //         user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::supply<USDT>(
+            user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::supply<USDC>(
-    //         user3, signer::address_of(user3), 10000000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::supply<USDC>(
+            user3, signer::address_of(user3), 10000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::borrow<USDT>(
-    //         user3, 8000000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::borrow<USDT>(
+            user3, 8000000, 100, ARIES_MARKET
+        );
 
-    //     exit_positions_manager::withdraw<USDT>(
-    //         user1, 500000, signer::address_of(user1), 100, ARIES_MARKET
-    //     );
+        exit_positions_manager::withdraw<USDT>(
+            user1, 500000, signer::address_of(user1), 100, ARIES_MARKET
+        );
 
-    //     // print(&std::coin::balance<USDT>(signer::address_of(user1)));
-    // }
-    // #[
-    //     test(
-    //         admin = @account,
-    //         user1 = @0x1001,
-    //         user2 = @0x1002,
-    //         user3 = @0x1003,
-    //         user4 = @0x1004,
-    //         aptos_framework = @aptos_framework
-    //     )
-    // ]
-    // public fun test_repay(
-    //     admin: &signer,
-    //     user1: &signer,
-    //     user2: &signer,
-    //     user3: &signer,
-    //     user4: &signer,
-    //     aptos_framework: &signer
-    // ) {
-    //     test_init(admin, user1, aptos_framework);
-    //     init_and_mint_coin(user2);
-    //     init_and_mint_coin(user3);
-    //     init_and_mint_coin(user4);
+        // print(&std::coin::balance<USDT>(signer::address_of(user1)));
+    }
+    #[
+        test(
+            admin = @account,
+            user1 = @0x1001,
+            user2 = @0x1002,
+            user3 = @0x1003,
+            user4 = @0x1004,
+            aptos_framework = @aptos_framework
+        )
+    ]
+    public fun test_repay(
+        admin: &signer,
+        user1: &signer,
+        user2: &signer,
+        user3: &signer,
+        user4: &signer,
+        aptos_framework: &signer
+    ) {
+        test_init(admin, user1, aptos_framework);
+        init_and_mint_coin(user2);
+        init_and_mint_coin(user3);
+        init_and_mint_coin(user4);
     
-    //     // user1 supply to pool
-    //     entry_positions_manager::supply<USDT>(
-    //         user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
-    //     );
+        // user1 supply to pool
+        entry_positions_manager::supply<USDT>(
+            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::supply<USDT>(
-    //         user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::supply<USDT>(
+            user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::supply<USDC>(
-    //         user3, signer::address_of(user3), 10000000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::supply<USDC>(
+            user3, signer::address_of(user3), 10000000, 100, ARIES_MARKET
+        );
 
-    //     entry_positions_manager::borrow<USDT>(
-    //         user3, 8000000, 100, ARIES_MARKET
-    //     );
+        entry_positions_manager::borrow<USDT>(
+            user3, 8000000, 100, ARIES_MARKET
+        );
 
-    //     exit_positions_manager::repay<USDT>(
-    //         user3, signer::address_of(user3), 5000000, 100, ARIES_MARKET
-    //     );
+        exit_positions_manager::repay<USDT>(
+            user3, signer::address_of(user3), 5000000, 100, ARIES_MARKET
+        );
 
-    //     // print(&std::coin::balance<USDT>(signer::address_of(user3)));
-    // }
+        // print(&std::coin::balance<USDT>(signer::address_of(user3)));
+    }
 
 }
