@@ -14,6 +14,12 @@ module account::coin {
     struct WBTC has store {}
 
     struct STAPT has store {}
+    
+    struct APT has store {}
+
+    struct WETH has store {}
+    
+    struct CAKE has store {}
 
     struct CoinCapabiltity<phantom CoinType> has key {
         mint_capability: MintCapability<CoinType>,
@@ -76,6 +82,48 @@ module account::coin {
             CoinCapabiltity<STAPT> { mint_capability: mint_d, burn_capability: burn_d }
         );
         coin::destroy_freeze_cap<STAPT>(freeze_d);
+
+        let (burn_d, freeze_d, mint_d) =
+            coin::initialize<APT>(
+                owner,
+                string::utf8(b"Aptos Token"),
+                string::utf8(b"APT"),
+                6,
+                true
+            );
+        move_to(
+            owner,
+            CoinCapabiltity<APT> { mint_capability: mint_d, burn_capability: burn_d }
+        );
+        coin::destroy_freeze_cap<APT>(freeze_d);
+
+        let (burn_d, freeze_d, mint_d) =
+            coin::initialize<WETH>(
+                owner,
+                string::utf8(b"Wrapped Ethereum"),
+                string::utf8(b"wETH"),
+                6,
+                true
+            );
+        move_to(
+            owner,
+            CoinCapabiltity<WETH> { mint_capability: mint_d, burn_capability: burn_d }
+        );
+        coin::destroy_freeze_cap<WETH>(freeze_d);
+
+        let (burn_d, freeze_d, mint_d) =
+            coin::initialize<CAKE>(
+                owner,
+                string::utf8(b"CAKE"),
+                string::utf8(b"CAKE"),
+                6,
+                true
+            );
+        move_to(
+            owner,
+            CoinCapabiltity<CAKE> { mint_capability: mint_d, burn_capability: burn_d }
+        );
+        coin::destroy_freeze_cap<CAKE>(freeze_d);
     }
 
     public fun mint<CoinType>(user: address, amount: u64) acquires CoinCapabiltity {
