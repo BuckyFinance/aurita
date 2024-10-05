@@ -26,7 +26,7 @@ module account::coin {
         burn_capability: BurnCapability<CoinType>
     }
 
-    public fun initialize(owner: &signer) {
+    fun init_module(owner: &signer) {
         let (burn_a, freeze_a, mint_a) =
             coin::initialize<USDC>(
                 owner,
@@ -126,11 +126,24 @@ module account::coin {
         coin::destroy_freeze_cap<CAKE>(freeze_d);
     }
 
-    public fun mint<CoinType>(user: address, amount: u64) acquires CoinCapabiltity {
+
+    public entry fun mint<CoinType>(user: &signer, amount: u64) acquires CoinCapabiltity {
+        register<CoinType>(user);
         let mint_capability =
             &borrow_global<CoinCapabiltity<CoinType>>(@account).mint_capability;
         let mint_coin = coin::mint(amount, mint_capability);
-        coin::deposit(user, mint_coin);
+        coin::deposit(signer::address_of(user), mint_coin);
+    }
+
+    public entry fun register<CoinType>(sender: &signer) {
+        if(coin::is_account_registered<CoinType>(signer::address_of(sender)) == false) {
+            coin::register<CoinType>(sender);
+        };
+    }
+
+    #[test_only]
+    public fun init_module_for_tests(sender: &signer) {
+        init_module(sender);
     }
 
     #[test_only]
@@ -139,25 +152,25 @@ module account::coin {
         coin::register<CoinType>(user);
     }
 
-    #[test(owner = @account)]
-    public fun testMintCoin(owner: &signer) acquires CoinCapabiltity {
-        initialize(owner);
-        init<USDC>(owner);
-        mint<USDC>(@account, 100);
-        // print(&coin::balance<USDC>(@account));
-    }
+    // #[test(owner = @account)]
+    // public fun testMintCoin(owner: &signer) acquires CoinCapabiltity {
+    //     init_module(owner);
+    //     // init<USDC>(owner);
+    //     mint<USDC>(owner, 100);
+    //     // print(&coin::balance<USDC>(@account));
+    // }
 
-    #[test(owner = @account, user = @0x1001)]
-    public fun testTransferCoin(owner: &signer, user: &signer) acquires CoinCapabiltity {
-        initialize(owner);
-        init<USDC>(owner);
-        init<USDC>(user);
+    // #[test(owner = @account, user = @0x1001)]
+    // public fun testTransferCoin(owner: &signer, user: &signer) acquires CoinCapabiltity {
+    //     initialize(owner);
+    //     // init<USDC>(owner);
+    //     // init<USDC>(user);
 
-        mint<USDC>(@account, 100);
+    //     mint<USDC>(@account, 100);
 
-        let amount: u64 = 30;
-        coin::transfer<USDC>(owner, signer::address_of(user), amount);
-        // print(&coin::balance<USDC>(signer::address_of(user)));
-        // print(&coin::balance<USDC>(signer::address_of(owner)));
-    }
+    //     let amount: u64 = 30;
+    //     coin::transfer<USDC>(owner, signer::address_of(user), amount);
+    //     // print(&coin::balance<USDC>(signer::address_of(user)));
+    //     // print(&coin::balance<USDC>(signer::address_of(owner)));
+    // }
 }

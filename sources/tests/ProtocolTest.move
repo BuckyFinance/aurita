@@ -10,6 +10,7 @@ module account::protocol_test {
     use aptos_framework::timestamp;
     use std::debug::print;
     use account::utils;
+    use aptos_framework::account;
     use std::string;
 
     const ERR_TEST: u64 = 1000;
@@ -20,22 +21,23 @@ module account::protocol_test {
     #[test_only]
     public fun init_and_mint_coin(sender: &signer) {
         let sender_addr = signer::address_of(sender);
+        account::create_account_for_test(sender_addr);
 
-        coin::init<USDT>(sender);
-        coin::init<USDC>(sender);
-        coin::init<WBTC>(sender);
-        coin::init<STAPT>(sender);
-        coin::init<APT>(sender);
-        coin::init<WETH>(sender);
-        coin::init<CAKE>(sender);
+        // coin::init<USDT>(sender);
+        // coin::init<USDC>(sender);
+        // coin::init<WBTC>(sender);
+        // coin::init<STAPT>(sender);
+        // coin::init<APT>(sender);
+        // coin::init<WETH>(sender);
+        // coin::init<CAKE>(sender);
 
-        coin::mint<USDT>(sender_addr, INITIAL_COIN);
-        coin::mint<USDC>(sender_addr, INITIAL_COIN);
-        coin::mint<WBTC>(sender_addr, INITIAL_COIN);
-        coin::mint<STAPT>(sender_addr, INITIAL_COIN);
-        coin::mint<APT>(sender_addr, INITIAL_COIN);
-        coin::mint<WETH>(sender_addr, INITIAL_COIN);
-        coin::mint<CAKE>(sender_addr, INITIAL_COIN);
+        coin::mint<USDT>(sender, INITIAL_COIN);
+        coin::mint<USDC>(sender, INITIAL_COIN);
+        coin::mint<WBTC>(sender, INITIAL_COIN);
+        coin::mint<STAPT>(sender, INITIAL_COIN);
+        coin::mint<APT>(sender, INITIAL_COIN);
+        coin::mint<WETH>(sender, INITIAL_COIN);
+        coin::mint<CAKE>(sender, INITIAL_COIN);
     }
 
     #[test_only]
@@ -53,7 +55,7 @@ module account::protocol_test {
         set_up_test_for_time(aptos_framework);
 
         // mint coin for admin and user
-        coin::initialize(admin);
+        coin::init_module_for_tests(admin);
         init_and_mint_coin(admin);
         init_and_mint_coin(user1);
 
