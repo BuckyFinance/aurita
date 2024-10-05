@@ -22,7 +22,7 @@ export async function getUserAllSupplyPositions(userAddress, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -44,7 +44,7 @@ export async function getUserAllBorrowPositions(userAddress, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -69,7 +69,7 @@ export async function getUserSupplyAmount(coinSymbol, userAddress, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -94,7 +94,7 @@ export async function getUserBorrowAmount(coinSymbol, userAddress, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -117,7 +117,7 @@ export async function getUserHealthFactor(userAddress, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -143,7 +143,7 @@ export async function getUserSupplyAPY(coinSymbol, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -169,7 +169,7 @@ export async function getUserBorrowAPY(coinSymbol, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -198,7 +198,7 @@ export async function getMarketDepositAPY(coinSymbol, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -223,7 +223,7 @@ export async function getBorrowAPY(coinSymbol, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -248,7 +248,7 @@ export async function getMarketLiquidity(coinSymbol, market_id) {
         const result = (await aptos.view({ payLoad }))[0];
         console.log(result);
         return result;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
