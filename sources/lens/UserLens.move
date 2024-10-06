@@ -4,7 +4,7 @@ module account::user_lens {
     use account::math;
     use account::mock_aries;
     use account::mock_echelon;
-    use account::coin::{USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use std::vector;
     use std::debug::print;
     use std::string;

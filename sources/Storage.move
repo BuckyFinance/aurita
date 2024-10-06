@@ -6,6 +6,7 @@ module account::storage {
     use std::simple_map::{Self, SimpleMap};
     use aptos_std::type_info::{TypeInfo, type_of};
     use account::heap_ds::{HeapArray, Self};
+    use account::aurita_coin::{USDT, USDC, WBTC, STAPT, APT, WETH, CAKE};
     use std::string;
 
     const HEALTH_FACTOR_LIQUIDATION_THRESHOLD: u256 = 1000000000000000000;
@@ -98,8 +99,15 @@ module account::storage {
     const EMARKET_EXIST: u64 = 2;
     const EMARKET_NOT_EXIST: u64 = 3;
 
-    fun init_module(sender: &signer) {
+    fun init_module(sender: &signer) acquires MarketCreated {
         move_to(sender, MarketCreated { market_created_list: vector::empty() });
+        create_market<USDT>(sender, 0, 0);
+        create_market<USDC>(sender, 0, 0);
+        create_market<WBTC>(sender, 0, 0);
+        create_market<STAPT>(sender, 0, 0);
+        create_market<APT>(sender, 0, 0);
+        create_market<WETH>(sender, 0, 0);
+        create_market<CAKE>(sender, 0, 0);
     }
 
     /// @ducanh2706 refactor later
@@ -486,7 +494,7 @@ module account::storage {
     }
 
     #[test_only]
-    public fun init_module_for_tests(sender: &signer) {
+    public fun init_module_for_tests(sender: &signer) acquires MarketCreated{
         init_module(sender);
     }
 }

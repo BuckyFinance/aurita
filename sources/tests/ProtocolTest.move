@@ -6,7 +6,7 @@ module account::protocol_test {
     use account::mock_aries;
     use account::storage;
     use account::user_lens;
-    use account::coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use aptos_framework::timestamp;
     use std::debug::print;
     use account::utils;
@@ -31,13 +31,13 @@ module account::protocol_test {
         // coin::init<WETH>(sender);
         // coin::init<CAKE>(sender);
 
-        coin::mint<USDT>(sender, INITIAL_COIN);
-        coin::mint<USDC>(sender, INITIAL_COIN);
-        coin::mint<WBTC>(sender, INITIAL_COIN);
-        coin::mint<STAPT>(sender, INITIAL_COIN);
-        coin::mint<APT>(sender, INITIAL_COIN);
-        coin::mint<WETH>(sender, INITIAL_COIN);
-        coin::mint<CAKE>(sender, INITIAL_COIN);
+        aurita_coin::mint<USDT>(sender, INITIAL_COIN);
+        aurita_coin::mint<USDC>(sender, INITIAL_COIN);
+        aurita_coin::mint<WBTC>(sender, INITIAL_COIN);
+        aurita_coin::mint<STAPT>(sender, INITIAL_COIN);
+        aurita_coin::mint<APT>(sender, INITIAL_COIN);
+        aurita_coin::mint<WETH>(sender, INITIAL_COIN);
+        aurita_coin::mint<CAKE>(sender, INITIAL_COIN);
     }
 
     #[test_only]
@@ -55,45 +55,16 @@ module account::protocol_test {
         set_up_test_for_time(aptos_framework);
 
         // mint coin for admin and user
-        coin::init_module_for_tests(admin);
+        aurita_coin::init_module_for_tests(admin);
         init_and_mint_coin(admin);
         init_and_mint_coin(user1);
 
         // init pool for mock lending
         mock_aries::init_module_for_tests(admin);
-        mock_aries::admin_add_pool<USDT>(admin);
-        mock_aries::admin_add_pool<USDC>(admin);
-        mock_aries::admin_add_pool<WBTC>(admin);
-        mock_aries::admin_add_pool<STAPT>(admin);
-        mock_aries::admin_add_pool<APT>(admin);
-        mock_aries::admin_add_pool<WETH>(admin);
-        mock_aries::admin_add_pool<CAKE>(admin);
-        mock_aries::create_usdt_market<USDT>();
-        mock_aries::create_usdc_market<USDC>();
-        mock_aries::create_wbtc_market<WBTC>();
-        mock_aries::create_stapt_market<STAPT>();
-        mock_aries::create_apt_market<APT>();
-        mock_aries::create_weth_market<WETH>();
-        mock_aries::create_cake_market<CAKE>();
-
-        mock_aries::deposit<USDT>(admin, INITIAL_COIN_MOCK_POOL);
-        mock_aries::deposit<USDC>(admin, INITIAL_COIN_MOCK_POOL);
-        mock_aries::deposit<WBTC>(admin, INITIAL_COIN_MOCK_POOL);
-        mock_aries::deposit<STAPT>(admin, INITIAL_COIN_MOCK_POOL);
-        mock_aries::deposit<APT>(admin, INITIAL_COIN_MOCK_POOL);
-        mock_aries::deposit<WETH>(admin, INITIAL_COIN_MOCK_POOL);
-        mock_aries::deposit<CAKE>(admin, INITIAL_COIN_MOCK_POOL);
+        mock_aries::initialize_market(admin);
 
         // initialize storage
         storage::init_module_for_tests(admin);
-        storage::create_market<USDT>(admin, 0, 0);
-        storage::create_market<USDC>(admin, 0, 0);
-        storage::create_market<WBTC>(admin, 0, 0);
-        storage::create_market<STAPT>(admin, 0, 0);
-        storage::create_market<APT>(admin, 0, 0);
-        storage::create_market<WETH>(admin, 0, 0);
-        storage::create_market<CAKE>(admin, 0, 0);
-
         utils::init_module_for_tests(admin);
     }
 
