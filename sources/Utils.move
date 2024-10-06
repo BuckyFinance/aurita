@@ -1,5 +1,5 @@
 module account::utils {
-    use account::coin::{USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use account::aurita_coin::{USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use account::storage;
     use std::vector;
     use std::debug::print;

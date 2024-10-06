@@ -6,7 +6,7 @@ module account::protocol_test {
     use account::mock_aries;
     use account::storage;
     use account::user_lens;
-    use account::coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use aptos_framework::timestamp;
     use std::debug::print;
     use account::utils;

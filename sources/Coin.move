@@ -1,4 +1,4 @@
-module account::coin {
+module account::aurita_coin {
     use std::debug::print;
     use std::signer;
     use std::string;

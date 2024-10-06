@@ -26,7 +26,7 @@ module account::entry_positions_manager {
         to_withdraw: u256
     }
 
-    public fun supply<CoinType>(
+    public entry fun supply<CoinType>(
         user: &signer,
         on_behalf: address,
         amount: u256,
@@ -116,7 +116,7 @@ module account::entry_positions_manager {
         matching_engine::update_supplier_in_DS<CoinType>(on_behalf);
     }
 
-    public fun borrow<CoinType>(
+    public entry fun borrow<CoinType>(
         user: &signer, amount: u256, iterations: u256, market_id: u64
     ) {
         let user_addr = signer::address_of(user);
