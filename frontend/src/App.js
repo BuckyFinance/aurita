@@ -13,7 +13,7 @@ import Aurita from "./components/Aurita";
 
 import { Aptos } from "@aptos-labs/ts-sdk";
 export const aptos = new Aptos();
-export const moduleAriesMarket = "0xd078a8ba11c56a0a29b321016aecee134cc503e6bd21a6c98da5130bd38bdc82";
+export const moduleAriesMarket = "0xa5b2c19ebda04bc7a1a7c4bab03c7e8ecbb86b7b35d16638071c0ada84dadc8d";
 export const moduleEchelonMarket = "0xc1c26ae676ef6cdda408a27bff9b6c48b532102898699691ae1c19bc17783432";
 
 
