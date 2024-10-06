@@ -30,14 +30,19 @@ module account::entry_positions_manager {
         user: &signer,
         on_behalf: address,
         amount: u256,
-        iterations: u256
+        iterations: u256,
+        market_id: u64,
     ) {
         let user_addr = signer::address_of(user);
+        if(storage::is_position_open(user_addr) == false) {
+            storage::open_position(user);
+        };
+        storage::add_supply_positions<CoinType>(user_addr);
         assert!(amount > 0, EAMOUNT_ZERO);
 
         let (reserveFactor, p2pCursor) = storage::get_market<CoinType>();
 
-        interest_rate_manager::update_indexes<CoinType>();
+        interest_rate_manager::update_indexes<CoinType>(market_id);
 
         // get index
         let (pool_supply_index, pool_borrow_index) = storage::get_pool_index<CoinType>();
@@ -85,7 +90,7 @@ module account::entry_positions_manager {
             p2p_supply_amount = p2p_supply_amount + to_add_in_p2p;
             user_supply_in_p2p = user_supply_in_p2p + to_add_in_p2p;
 
-            pos_utils::repay<CoinType>(user, vars.to_repay);
+            pos_utils::repay<CoinType>(user, vars.to_repay, market_id);
         };
 
         // supply remaining on pool
@@ -93,7 +98,7 @@ module account::entry_positions_manager {
         if (vars.remain_to_supply > 0) {
             user_supply_on_pool = user_supply_on_pool
                 + math::ray_div(vars.remain_to_supply, pool_supply_index);
-            pos_utils::deposit<CoinType>(user, vars.remain_to_supply);
+            pos_utils::deposit<CoinType>(user, vars.remain_to_supply, market_id);
         };
 
         // update user supply balance
@@ -112,16 +117,17 @@ module account::entry_positions_manager {
     }
 
     public fun borrow<CoinType>(
-        user: &signer, amount: u256, iterations: u256
+        user: &signer, amount: u256, iterations: u256, market_id: u64
     ) {
         let user_addr = signer::address_of(user);
+        storage::add_borrow_positions<CoinType>(user_addr);
         assert!(amount > 0, EAMOUNT_ZERO);
 
         let (reserveFactor, p2pCursor) = storage::get_market<CoinType>();
 
-        interest_rate_manager::update_indexes<CoinType>();
+        interest_rate_manager::update_indexes<CoinType>(market_id);
 
-        assert!(borrow_allowed<CoinType>(user_addr, amount), EBORROW_NOT_ALLOWED);
+        assert!(borrow_allowed<CoinType>(user_addr, amount, market_id), EBORROW_NOT_ALLOWED);
 
         // get index
         let (pool_supply_index, pool_borrow_index) = storage::get_pool_index<CoinType>();
@@ -172,7 +178,7 @@ module account::entry_positions_manager {
             user_borrow_in_p2p = user_borrow_in_p2p + to_add_in_p2p;
 
             coin::merge(
-                &mut withdraw_coin, pos_utils::withdraw<CoinType>(user, vars.to_withdraw)
+                &mut withdraw_coin, pos_utils::withdraw<CoinType>(user, vars.to_withdraw, market_id)
             );
         };
 
@@ -182,7 +188,7 @@ module account::entry_positions_manager {
                 + math::ray_div(vars.remain_to_borrow, pool_borrow_index);
             coin::merge(
                 &mut withdraw_coin,
-                pos_utils::borrow<CoinType>(user, vars.remain_to_borrow)
+                pos_utils::borrow<CoinType>(user, vars.remain_to_borrow, market_id)
             );
         };
 
@@ -205,9 +211,9 @@ module account::entry_positions_manager {
         coin::deposit(user_addr, withdraw_coin);
     }
 
-    fun borrow_allowed<CoinType>(user: address, borrow_amount: u256): bool {
+    fun borrow_allowed<CoinType>(user: address, borrow_amount: u256, market_id: u64): bool {
         let (total_collateral, total_borrowable, total_max_debt, total_debt) =
-            utils::get_liquidity_data<CoinType>(user, 0, borrow_amount);
+            utils::get_liquidity_data<CoinType>(user, 0, borrow_amount, market_id);
         (total_debt <= total_borrowable)
     }
 }
