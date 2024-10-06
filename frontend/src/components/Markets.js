@@ -6,6 +6,7 @@ import {
   SettingOutlined,
 } from "@ant-design/icons";
 import tokenList from "../tokenList.json";
+import { useWallet, InputTransactionData, InputViewFunctionData } from "@aptos-labs/wallet-adapter-react";
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -15,9 +16,13 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { useLocation } from "react-router-dom";
-
+import { useMarkets } from "../hooks/useMarkets";
+import { useMarketAction } from "../hooks/useWriteTx";
 
 function Markets(props) {
+	const market = props.market;
+	const marketData = props.marketData;
+
 	const [isOpen, setIsOpen] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [token, setToken] = useState(tokenList[0]);
@@ -27,43 +32,47 @@ function Markets(props) {
 	const [underlineStyle, setUnderlineStyle] = useState({ width: 0, transform: 'translateX(0px)' });
 
 	const location = useLocation();
-
+    const { account, signAndSubmitTransaction } = useWallet();
+	const [tokenAmount, setTokenAmount] = useState(null);
+	
 	useEffect(() => {
 		setIsOpen(false);
 		tabRefs.current = [];
 		setUnderlineStyle({ width: 0, transform: 'translateX(0px)' });
 		console.log("Route changed or re-clicked", location.pathname);
 	}, [location]);
-
+	
 	useEffect(() => {
 		if (tabRefs.current[selectedTab]) {
 			console.log(tabRefs);
-		  const tabElement = tabRefs.current[selectedTab];
-		  setUnderlineStyle({
-			width: tabElement.offsetWidth,
-			transform: `translateX(${tabElement.offsetLeft}px)`
-		  });
+			const tabElement = tabRefs.current[selectedTab];
+			setUnderlineStyle({
+				width: tabElement.offsetWidth,
+				transform: `translateX(${tabElement.offsetLeft}px)`
+			});
 		}
 	}, [selectedTab]);
 	
 	useEffect(() => {
-		// Initialize underline style on first render
-		console.log("first redner", tabRefs.current[selectedTab]);
 		if (tabRefs.current[selectedTab]) {
-			console.log("123");
-		  const tabElement = tabRefs.current[selectedTab];
-		  setUnderlineStyle({
-			width: tabElement.offsetWidth,
-			transform: `translateX(${tabElement.offsetLeft}px)`
-		  });
+			const tabElement = tabRefs.current[selectedTab];
+			setUnderlineStyle({
+				width: tabElement.offsetWidth,
+				transform: `translateX(${tabElement.offsetLeft}px)`
+			});
 		}
 	}, [isOpen]);
+	
 	const tabs = ['Supply', 'Withdraw', 'Borrow', 'Repay'];
-
+	
 	const changeTab = (tabIndex) => {
-		console.log(tabIndex);
 		setSelectedTab(tabIndex);
 	};
+	const {isPending, isSuccess, isFailed, execute} = useMarketAction(market.id, tabs[selectedTab], token.ticker, tokenAmount, account ? account.address : null, signAndSubmitTransaction);
+
+	const changeAmount = (e) => {
+		setTokenAmount(e.target.value);
+	}
 
 	return (
 			<>
@@ -123,6 +132,8 @@ function Markets(props) {
 						<Input
 							placeholder="0"
 							style={{fontFamily: 'Kanit'}}
+							value={tokenAmount}
+							onChange={changeAmount}
 						/>
 						<div className="assetOne" onClick={() => setIsModalOpen(true)}>
 							<img src={token.img} alt="assetOneLogo" className="assetLogo" />
@@ -150,7 +161,7 @@ function Markets(props) {
 							</div>
 						</div>
 					</div>
-					<div className="migrateButton">{tabs[selectedTab]}</div>
+					<div className="migrateButton" onClick={() => execute()}>{tabs[selectedTab]}</div>
 				</div>
 			</div>
 			}
@@ -190,7 +201,12 @@ function Markets(props) {
 								</TableCell>
 								<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">100.00</TableCell>
 								<TableCell style={{borderTopRightRadius: '10px',
-									borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">10.00%</TableCell>
+									borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
+									{marketData ?
+										<>{marketData[token.ticker]['deposit_apy']}%</> :
+										<>"Loading"</>
+									}
+								</TableCell>
 							</TableRow>
 						))}
 						</TableBody>
@@ -247,8 +263,18 @@ function Markets(props) {
 							onClick={() => {setIsOpen(true); setToken(token); changeTab(2)}}
 							>
 								<TableCell style={{borderTopLeftRadius: '10px',
-									borderBottomLeftRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">10.00%</TableCell>
-								<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">100.00</TableCell>
+									borderBottomLeftRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
+										{marketData ?
+											<>{marketData[token.ticker]['borrow_apy']}%</> :
+											<>"Loading"</>
+										}
+									</TableCell>
+								<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
+									{marketData ?
+												<>{marketData[token.ticker]['market_liquidity']}</> :
+												<>"Loading"</>
+									}
+								</TableCell>
 								<TableCell style={{ borderTopRightRadius: '10px',
 									borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} component="th" scope="row">
 									<div style={{display: 'flex', gap: '5px'}}>

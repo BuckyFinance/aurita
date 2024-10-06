@@ -2,27 +2,28 @@ import { aptos } from "../App.js";
 import { moduleAriesMarket } from "../App.js";
 import { moduleEchelonMarket } from "../App.js";
 
-export async function mintCoin(coinSymbol, userAddress, amount, signAndSubmitTransaction) {
+export async function mintCoin(coinSymbol, userAddress, amount, market_id, signAndSubmitTransaction) {
     let moduleAddress;
     if(market_id === 0) {
         moduleAddress = moduleAriesMarket;
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::coin::${coinSymbol}`;
+    console.log(moduleAddress);
+    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
 
-    const payLoad = {
+    const payload = {
         data: {
-            function: `${moduleAddress}::coin::mint`,
+            function: `${moduleAddress}::aurita_coin::mint`,
             typeArguments: [coin],
-            functionArguments: [userAddress, amount_in_wei],
+            functionArguments: [amount_in_wei],
         }
     };
 
     let result;
     try {
-        const response = signAndSubmitTransaction(payLoad);
+        const response = signAndSubmitTransaction(payload);
         return response;
     } catch(error) {
         console.log(error);
@@ -41,12 +42,12 @@ export async function supply(coinSymbol, userAddress, amount, market_id, signAnd
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::coin::${coinSymbol}`;
+    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
     const onBehalfAddress = userAddress;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
 
-    const payLoad = {
+    const payload = {
         data: {
             function: `${moduleAddress}::entry_positions_manager::supply`,
             typeArguments: [coin],
@@ -56,7 +57,7 @@ export async function supply(coinSymbol, userAddress, amount, market_id, signAnd
 
     let result;
     try {
-        const response = signAndSubmitTransaction(payLoad);
+        const response = signAndSubmitTransaction(payload);
         return response;
     } catch(error) {
         console.log(error);
@@ -71,11 +72,11 @@ export async function borrow(coinSymbol, amount, market_id, signAndSubmitTransac
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::coin::${coinSymbol}`;
+    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
 
-    const payLoad = {
+    const payload = {
         data: {
             function: `${moduleAddress}::entry_positions_manager::borrow`,
             typeArguments: [coin],
@@ -85,7 +86,7 @@ export async function borrow(coinSymbol, amount, market_id, signAndSubmitTransac
 
     let result;
     try {
-        const response = signAndSubmitTransaction(payLoad);
+        const response = signAndSubmitTransaction(payload);
         return response;
     } catch(error) {
         console.log(error);
@@ -100,12 +101,12 @@ export async function withdraw(coinSymbol, userAddress, amount, market_id, signA
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::coin::${coinSymbol}`;
+    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
     const receiver = userAddress;
 
-    const payLoad = {
+    const payload = {
         data: {
             function: `${moduleAddress}::exit_positions_manager::withdraw`,
             typeArguments: [coin],
@@ -115,7 +116,7 @@ export async function withdraw(coinSymbol, userAddress, amount, market_id, signA
 
     let result;
     try {
-        const response = signAndSubmitTransaction(payLoad);
+        const response = signAndSubmitTransaction(payload);
         return response;
     } catch(error) {
         console.log(error);
@@ -130,14 +131,14 @@ export async function repay(coinSymbol, userAddress, amount, market_id, signAndS
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::coin::${coinSymbol}`;
+    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
     const onBehalfAddress = userAddress;
 
-    const payLoad = {
+    const payload = {
         data: {
-            function: `${moduleAddress}::entry_positions_manager::borrow`,
+            function: `${moduleAddress}::entry_positions_manager::repay`,
             typeArguments: [coin],
             functionArguments: [onBehalfAddress, amount_in_wei, iterations, market_id],
         }
@@ -145,7 +146,7 @@ export async function repay(coinSymbol, userAddress, amount, market_id, signAndS
 
     let result;
     try {
-        const response = signAndSubmitTransaction(payLoad);
+        const response = signAndSubmitTransaction(payload);
         return response;
     } catch(error) {
         console.log(error);

@@ -16,8 +16,15 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { useLocation } from "react-router-dom";
 import empty from "../media/empty2.svg";
+import { useWallet, InputTransactionData, InputViewFunctionData } from "@aptos-labs/wallet-adapter-react";
 
-function Dashboard(){
+import { mintCoin } from "../backend/EntryFunction";
+import { getBorrowAPY, getMarketDepositAPY, getMarketLiquidity } from "../backend/ViewFunction";
+import { getUserAllBorrowPositions, getUserAllSupplyPositions, getUserSupplyAmount } from "../backend/ViewFunction";
+
+function Dashboard(props){
+    const { account, signAndSubmitTransaction } = useWallet();
+
     function DataBox(props){
         return (
             <div className="box">
@@ -50,9 +57,21 @@ function Dashboard(){
             apy: 0.22
         },
     ]
+
+
+    // async function MintToken(){
+    //     await mintCoin("WETH", account.address, 10000000, 0, signAndSubmitTransaction);
+    //     console.log("MINTED");
+    // }
+
+    async function f(){
+        console.log(await getUserSupplyAmount("WBTC", account.address, 0));
+    }
+
     
     return (
         <>
+                <button onClick={() => f()}>MINT</button>
             <div className="dashboard">
                 <div className="infoBox">
                     <DataBox name='Total collateral' boxContent='$1234.39'></DataBox>

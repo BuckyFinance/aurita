@@ -11,8 +11,12 @@ import Loading from "./components/Loading";
 import Landing from "./components/Landing";
 import Aurita from "./components/Aurita";
 
-import { Aptos } from "@aptos-labs/ts-sdk";
-export const aptos = new Aptos();
+import { Aptos, AptosConfig} from "@aptos-labs/ts-sdk";
+import { Network } from "aptos";
+
+
+const aptosConfig = new AptosConfig({network: Network.TESTNET});
+export const aptos = new Aptos(aptosConfig);
 export const moduleAriesMarket = "0xa5b2c19ebda04bc7a1a7c4bab03c7e8ecbb86b7b35d16638071c0ada84dadc8d";
 export const moduleEchelonMarket = "0xc1c26ae676ef6cdda408a27bff9b6c48b532102898699691ae1c19bc17783432";
 

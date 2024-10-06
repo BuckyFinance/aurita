@@ -6,31 +6,18 @@ import { Col } from "antd";
 import "@aptos-labs/wallet-adapter-ant-design/dist/index.css";
 
 import { Link } from "react-router-dom";
-import Aries from "./../media/aries.png"
-import Echelon from "./../media/echelon.png"
 import { useState, useEffect, useRef} from "react";
 import { Input, Popover, Radio, Modal, message } from "antd";
 
+import { marketList } from "./Aurita";
 
 function Header(props) {
+	const market = props.market;
+	const setMarket = props.setMarket;
 
   	const {address, isConnected, connect} = props;
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [market, setMarket] = useState({
-		"market": "Aries",
-		"img": Aries
-	});
 	
-	const marketList = [
-		{
-			"market": "Aries",
-			"img": Aries
-		}, 
-		{
-			"market": "Echelon",
-			"img": Echelon
-		}
-	];
 
 	return (
 		<header className="header">
