@@ -2,7 +2,7 @@ import { aptos } from "../App.js";
 import { moduleAriesMarket } from "../App.js";
 import { moduleEchelonMarket } from "../App.js";
 
-export async function mintCoin(coinSymbol, userAddress, amount) {
+export async function mintCoin(coinSymbol, userAddress, amount, signAndSubmitTransaction) {
     let moduleAddress;
     if(market_id === 0) {
         moduleAddress = moduleAriesMarket;
@@ -24,7 +24,7 @@ export async function mintCoin(coinSymbol, userAddress, amount) {
     try {
         const response = signAndSubmitTransaction(payLoad);
         return response;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -58,7 +58,7 @@ export async function supply(coinSymbol, userAddress, amount, market_id, signAnd
     try {
         const response = signAndSubmitTransaction(payLoad);
         return response;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -87,7 +87,7 @@ export async function borrow(coinSymbol, amount, market_id, signAndSubmitTransac
     try {
         const response = signAndSubmitTransaction(payLoad);
         return response;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -117,7 +117,7 @@ export async function withdraw(coinSymbol, userAddress, amount, market_id, signA
     try {
         const response = signAndSubmitTransaction(payLoad);
         return response;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -147,7 +147,7 @@ export async function repay(coinSymbol, userAddress, amount, market_id, signAndS
     try {
         const response = signAndSubmitTransaction(payLoad);
         return response;
-    } catch {
+    } catch(error) {
         console.log(error);
         return;
     }

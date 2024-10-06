@@ -2,12 +2,15 @@ module account::mock_aries {
     use std::string::{Self, String};
     use std::signer;
     use std::vector;
+    use std::debug::print;
     use aptos_framework::coin::{Self, Coin};
     use std::simple_map::{Self, SimpleMap};
     use aptos_std::type_info::{TypeInfo, type_of};
+    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
 
     const ERR: u64 = 1000;
     const BASE_12: u256 = 1000000000000;
+    const INITIAL_COIN: u256 = 1000000000000000000; // 10^12
 
     struct MarketReserve<phantom CoinType> has key {
         reserve: Coin<CoinType>
@@ -32,13 +35,46 @@ module account::mock_aries {
                 market_map: simple_map::create()
             }
         );
+        admin_add_pool<USDT>(sender);
+        admin_add_pool<USDC>(sender);
+        admin_add_pool<WBTC>(sender);
+        admin_add_pool<STAPT>(sender);
+        admin_add_pool<APT>(sender);
+        admin_add_pool<WETH>(sender);
+        admin_add_pool<CAKE>(sender);
     }
 
     // ===============================================================================
     // ============================= Entry Function ==================================
     // ===============================================================================
 
-    public entry fun admin_add_pool<CoinType>(sender: &signer) {
+    public entry fun initialize_market(sender: &signer) acquires MarketRecord, MarketReserve{
+        create_usdt_market<USDT>();
+        create_usdc_market<USDC>();
+        create_wbtc_market<WBTC>();
+        create_stapt_market<STAPT>();
+        create_apt_market<APT>();
+        create_weth_market<WETH>();
+        create_cake_market<CAKE>();
+
+        aurita_coin::mint<USDT>(sender, (INITIAL_COIN as u64));
+        aurita_coin::mint<USDC>(sender, (INITIAL_COIN as u64));
+        aurita_coin::mint<WBTC>(sender, (INITIAL_COIN as u64));
+        aurita_coin::mint<STAPT>(sender, (INITIAL_COIN as u64));
+        aurita_coin::mint<APT>(sender, (INITIAL_COIN as u64));
+        aurita_coin::mint<WETH>(sender, (INITIAL_COIN as u64));
+        aurita_coin::mint<CAKE>(sender, (INITIAL_COIN as u64));
+
+        deposit<USDT>(sender, INITIAL_COIN);
+        deposit<USDC>(sender, INITIAL_COIN);
+        deposit<WBTC>(sender, INITIAL_COIN);
+        deposit<STAPT>(sender, INITIAL_COIN);
+        deposit<APT>(sender, INITIAL_COIN);
+        deposit<WETH>(sender, INITIAL_COIN);
+        deposit<CAKE>(sender, INITIAL_COIN);
+    }
+
+    public fun admin_add_pool<CoinType>(sender: &signer) {
         move_to<MarketReserve<CoinType>>(
             sender,
             MarketReserve<CoinType> {
@@ -47,37 +83,37 @@ module account::mock_aries {
         );
     }
 
-    public entry fun create_usdt_market<CoinType>() acquires MarketRecord {
+    public fun create_usdt_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
         create_market(coin_type, 53100 * BASE_12, 86400 * BASE_12);
     }
 
-    public entry fun create_usdc_market<CoinType>() acquires MarketRecord {
+    public fun create_usdc_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
         create_market(coin_type, 46300 * BASE_12, 80700 * BASE_12);
     }
 
-    public entry fun create_wbtc_market<CoinType>() acquires MarketRecord {
+    public fun create_wbtc_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
         create_market(coin_type, 21900 * BASE_12, 64900 * BASE_12);
     }
 
-    public entry fun create_apt_market<CoinType>() acquires MarketRecord {
+    public fun create_apt_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
         create_market(coin_type, 22800 * BASE_12, 49500 * BASE_12);
     }
 
-    public entry fun create_stapt_market<CoinType>() acquires MarketRecord {
+    public fun create_stapt_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
         create_market(coin_type, 0 * BASE_12,  500 * BASE_12);
     }
     
-    public entry fun create_weth_market<CoinType>() acquires MarketRecord {
+    public fun create_weth_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
         create_market(coin_type, 7000 * BASE_12, 27800 * BASE_12);
     }
 
-    public entry fun create_cake_market<CoinType>() acquires MarketRecord {
+    public fun create_cake_market<CoinType>() acquires MarketRecord {
         let coin_type = type_of<CoinType>();
         create_market(coin_type, 0 * BASE_12, 1700 * BASE_12);
     }
