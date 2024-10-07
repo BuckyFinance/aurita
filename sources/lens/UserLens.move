@@ -7,30 +7,57 @@ module account::user_lens {
     use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use std::vector;
     use std::debug::print;
-    use std::string;
+    use std::string::{Self, String};
+    use std::type_info;
     use aptos_std::type_info::{TypeInfo, type_of};
 
     #[view]
-    public fun get_supply_positions(sender_addr: address): vector<TypeInfo> {
-        storage::get_supply_positions(sender_addr)
+    public fun get_supply_positions(sender_addr: address): vector<String> {
+        let supply_positions = storage::get_supply_positions(sender_addr);
+        let coin_symbol_list: vector<String> = vector::empty();
+        let supply_numbers = vector::length(&supply_positions);
+        let i = 0;
+        while(i < supply_numbers) {
+            let coin_type = vector::borrow(&supply_positions, (i as u64));
+            let coin_symbol = type_info::struct_name(coin_type);
+            let coin_symbol_string = string::utf8(coin_symbol);
+            vector::push_back(&mut coin_symbol_list, coin_symbol_string);
+            i = i + 1;
+        };
+        coin_symbol_list
     }
 
     #[view]
-    public fun get_borrow_positions(sender_addr: address): vector<TypeInfo> {
-        storage::get_borrow_positions(sender_addr)
+    public fun get_borrow_positions(sender_addr: address): vector<String> {
+        let borrow_positions = storage::get_borrow_positions(sender_addr);
+        let coin_symbol_list: vector<String> = vector::empty();
+        let borrow_numbers = vector::length(&borrow_positions);
+        let i = 0;
+        while(i < borrow_numbers) {
+            let coin_type = vector::borrow(&borrow_positions, (i as u64));
+            let coin_symbol = type_info::struct_name(coin_type);
+            let coin_symbol_string = string::utf8(coin_symbol);
+            vector::push_back(&mut coin_symbol_list, coin_symbol_string);
+            i = i + 1;
+        };
+        coin_symbol_list
     }
 
     #[view]
     public fun get_total_supply<CoinType>(sender_addr: address): u256 {
         let (in_p2p, on_pool) = storage::get_supply_balance<CoinType>(sender_addr);
-        let total_supply = in_p2p + on_pool;
+        let (pool_supply_index, pool_borrow_index) = storage::get_pool_index<CoinType>();
+        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
+        let total_supply = math::ray_mul(in_p2p, p2p_supply_index) + math::ray_mul(on_pool, pool_supply_index);
         total_supply
     }
 
     #[view]
     public fun get_total_borrow<CoinType>(sender_addr: address): u256 {
         let (in_p2p, on_pool) = storage::get_borrow_balance<CoinType>(sender_addr);
-        let total_borrow = in_p2p + on_pool;
+        let (pool_supply_index, p2p_borrow_index) = storage::get_pool_index<CoinType>();
+        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
+        let total_borrow = math::ray_mul(in_p2p, p2p_borrow_index) + math::ray_mul(on_pool, p2p_borrow_index);
         total_borrow
     }
 

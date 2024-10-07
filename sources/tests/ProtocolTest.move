@@ -12,6 +12,7 @@ module account::protocol_test {
     use account::utils;
     use aptos_framework::account;
     use std::string;
+    use std::type_info;
 
     const ERR_TEST: u64 = 1000;
     const INITIAL_COIN: u64 = 10000000000000; // 10^7
@@ -78,9 +79,23 @@ module account::protocol_test {
         entry_positions_manager::supply<USDT>(
             user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
         );
-        let (p2p_supply, p2p_borrow) = storage::get_p2p_index<USDT>();
-        // print(&p2p_supply);
-        // print(&p2p_borrow);
+
+        entry_positions_manager::supply<USDC>(
+            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+        );
+
+        let total_supply = user_lens::get_total_supply<USDT>(signer::address_of(user1));
+        assert!(total_supply == 1000000, ERR_TEST);
+
+        let user1_supply_positions = user_lens::get_supply_positions(signer::address_of(user1));
+        let user1_supply_numbers = vector::length(&user1_supply_positions);
+        assert!(user1_supply_numbers == 2, ERR_TEST);
+        let i = 0;
+        while(i < user1_supply_numbers) {
+            let coin_symbol = vector::borrow(&user1_supply_positions, (i as u64));
+            // print(coin_symbol);
+            i = i + 1;
+        };
     }
 
     #[
@@ -132,23 +147,33 @@ module account::protocol_test {
         entry_positions_manager::borrow<USDT>(user4, 8000000, 100, ARIES_MARKET);
         (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
+        let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user4));
+        assert!(total_borrow == 8000000, ERR_TEST);
+
         let hf = user_lens::get_health_factor(signer::address_of(user4), ARIES_MARKET);
-        print(&string::utf8(b"Health Factor: "));
-        print(&hf);
+        // print(&string::utf8(b"Health Factor: "));
+        // print(&hf);
 
         let borrow_positions_list = user_lens::get_borrow_positions(signer::address_of(user4));
         let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user4));
         assert!(vector::length(&borrow_positions_list) == 1, ERR_TEST);
         assert!(vector::length(&supply_positions_list) == 1, ERR_TEST);
+        let user4_borrow_numbers = vector::length(&borrow_positions_list);
+        let i = 0;
+        while(i < user4_borrow_numbers) {
+            let coin_symbol = vector::borrow(&borrow_positions_list, (i as u64));
+            // print(coin_symbol);
+            i = i + 1;
+        };
 
         let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user3));
         assert!(vector::length(&supply_positions_list) == 2, ERR_TEST);
 
         let p2p_supply_apy = user_lens::get_user_supply_apy<WBTC>(ARIES_MARKET);
-        print(&p2p_supply_apy);
+        // print(&p2p_supply_apy);
 
         let p2p_borrow_apy = user_lens::get_user_supply_apy<USDT>(ARIES_MARKET);
-        print(&p2p_borrow_apy);
+        // print(&p2p_borrow_apy);
     }
 
     #[
@@ -242,7 +267,11 @@ module account::protocol_test {
             user1, 500000, signer::address_of(user1), 100, ARIES_MARKET
         );
 
-        // print(&std::coin::balance<USDT>(signer::address_of(user1)));
+        let total_supply = user_lens::get_total_supply<USDT>(signer::address_of(user1));
+        assert!(total_supply == 1000000 - 500000, ERR_TEST);
+        let user1_balance = std::coin::balance<USDT>(signer::address_of(user1));
+        assert!(user1_balance == 9999999500000, ERR_TEST);
+
     }
     #[
         test(
@@ -288,7 +317,11 @@ module account::protocol_test {
             user3, signer::address_of(user3), 5000000, 100, ARIES_MARKET
         );
 
-        // print(&std::coin::balance<USDT>(signer::address_of(user3)));
+        let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user3));
+        assert!(total_borrow == 8000000 - 5000000, ERR_TEST);   
+        
+        let user3_balance = std::coin::balance<USDT>(signer::address_of(user3));
+        assert!(user3_balance == 10000003000000, ERR_TEST);
     }
 
 }
