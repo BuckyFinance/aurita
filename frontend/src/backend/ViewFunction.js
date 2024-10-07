@@ -1,8 +1,8 @@
 
 import { Aptos } from "@aptos-labs/ts-sdk";
 export const aptos = new Aptos();
-export const moduleAriesMarket = "0xa5b2c19ebda04bc7a1a7c4bab03c7e8ecbb86b7b35d16638071c0ada84dadc8d";
-export const moduleEchelonMarket = "0xc1c26ae676ef6cdda408a27bff9b6c48b532102898699691ae1c19bc17783432";
+export const moduleAriesMarket = "0xd6e74f1e6d12931e46e492ee7ec858fdcd2bb5bb93899bf55282fbe5e99c29ca";
+export const moduleEchelonMarket = "";
 //===================================================================================
 //================================== User Lens ======================================
 //===================================================================================
