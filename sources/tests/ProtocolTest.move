@@ -139,20 +139,35 @@ module account::protocol_test {
             user3, signer::address_of(user3), 3000000, 100, ARIES_MARKET
         );
 
+        // supply 10 Bitcoin = 635590 USDT
         entry_positions_manager::supply<WBTC>(
             user4, signer::address_of(user4), 10000000, 100, ARIES_MARKET
         );
         let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
-        entry_positions_manager::borrow<USDT>(user4, 8000000, 100, ARIES_MARKET);
+        // calculate borrowable
+        let borrowable = user_lens::get_borrowable(signer::address_of(user4), ARIES_MARKET);
+        assert!(borrowable == 508472000000, ERR_TEST);
+
+        // try borrow amount greater than borrowable amount
+        entry_positions_manager::borrow<USDT>(user4, 508472000000, 100, ARIES_MARKET);
         (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
-        let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user4));
-        assert!(total_borrow == 8000000, ERR_TEST);
 
-        let hf = user_lens::get_health_factor(signer::address_of(user4), ARIES_MARKET);
-        // print(&string::utf8(b"Health Factor: "));
+        // borrow 200000 USDT
+        // entry_positions_manager::borrow<USDT>(user4, 200000000000, 100, ARIES_MARKET);
+        // (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
+
+        let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user4));
+        // print(&total_borrow);
+        assert!(total_borrow == 508472000000, ERR_TEST);
+
+        let hf = exit_positions_manager::get_user_health_factor<USDT>(signer::address_of(user4), 0, ARIES_MARKET);
         // print(&hf);
+        assert!(hf == 1125000000000000000, ERR_TEST);
+
+        let user_hf = user_lens::get_health_factor(signer::address_of(user4), ARIES_MARKET);
+        assert!(hf == 1125000000000000000, ERR_TEST);
 
         let borrow_positions_list = user_lens::get_borrow_positions(signer::address_of(user4));
         let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user4));
@@ -169,11 +184,8 @@ module account::protocol_test {
         let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user3));
         assert!(vector::length(&supply_positions_list) == 2, ERR_TEST);
 
-        let p2p_supply_apy = user_lens::get_user_supply_apy<WBTC>(ARIES_MARKET);
-        // print(&p2p_supply_apy);
-
-        let p2p_borrow_apy = user_lens::get_user_supply_apy<USDT>(ARIES_MARKET);
-        // print(&p2p_borrow_apy);
+        let p2p_apy = user_lens::get_user_p2p_apy<WBTC>(ARIES_MARKET);
+        assert!(p2p_apy == 43400000000000000, ERR_TEST);
     }
 
     #[
@@ -323,5 +335,4 @@ module account::protocol_test {
         let user3_balance = std::coin::balance<USDT>(signer::address_of(user3));
         assert!(user3_balance == 10000003000000, ERR_TEST);
     }
-
 }

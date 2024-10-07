@@ -45,20 +45,12 @@ module account::user_lens {
 
     #[view]
     public fun get_total_supply<CoinType>(sender_addr: address): u256 {
-        let (in_p2p, on_pool) = storage::get_supply_balance<CoinType>(sender_addr);
-        let (pool_supply_index, pool_borrow_index) = storage::get_pool_index<CoinType>();
-        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
-        let total_supply = math::ray_mul(in_p2p, p2p_supply_index) + math::ray_mul(on_pool, pool_supply_index);
-        total_supply
+        utils::get_user_supply_balance<CoinType>(sender_addr)
     }
 
     #[view]
     public fun get_total_borrow<CoinType>(sender_addr: address): u256 {
-        let (in_p2p, on_pool) = storage::get_borrow_balance<CoinType>(sender_addr);
-        let (pool_supply_index, p2p_borrow_index) = storage::get_pool_index<CoinType>();
-        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
-        let total_borrow = math::ray_mul(in_p2p, p2p_borrow_index) + math::ray_mul(on_pool, p2p_borrow_index);
-        total_borrow
+        utils::get_user_borrow_balance<CoinType>(sender_addr)
     }
 
     #[view]
@@ -78,7 +70,7 @@ module account::user_lens {
         while(i < positions_number) {
             let coin_type = vector::borrow(&all_positions_created, (i as u64));
             let (collateral, debt) = get_liquidity_data(sender_addr, *coin_type , market_id);
-            user_total_max_debt = user_total_max_debt + math::ray_mul(
+            user_total_max_debt = user_total_max_debt + math::wad_mul(
                 collateral, liquidation_threshold
             );
             user_total_debt = user_total_debt + debt;
@@ -90,28 +82,38 @@ module account::user_lens {
         // print(&user_total_max_debt);
         // print(&user_total_debt);
         if(user_total_debt > 0) {
-            health_factor = user_total_max_debt / user_total_debt;
+            health_factor = math::wad_div(user_total_max_debt, user_total_debt);
         };
         health_factor
     }
 
     #[view]
-    public fun get_user_supply_apy<CoinType>(market_id: u64): u256 {
-        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
-        let (deposit_apy, borrow_apy) = {
+    public fun get_borrowable(sender_addr: address, market_id: u64): u256 {
+        let all_positions_created = storage::get_all_postions_created(sender_addr);
+        let i = 0;
+        let positions_number = vector::length(&all_positions_created);
+        let user_total_max_debt = 0;
+        let user_total_debt = 0;
+        let (ltv, liquidation_threshold) = {
             if(market_id == 0) {
-                mock_aries::get_market_apy<CoinType>()
+                mock_aries::get_market_configuration()
             } else {
-                mock_echelon::get_market_apy<CoinType>()
+                mock_echelon::get_market_configuration()
             }
         };
-        let p2p_supply_apy = deposit_apy * p2p_supply_index / 1000000000000000000;
-        p2p_supply_apy
+        let total_borrowable = 0;
+        while(i < positions_number) {
+            let coin_type = vector::borrow(&all_positions_created, (i as u64));
+            let (collateral, debt) = get_liquidity_data(sender_addr, *coin_type , market_id);
+            total_borrowable = total_borrowable + math::wad_mul(collateral, ltv);
+            // print(&debt);
+            i = i + 1;
+        };
+        total_borrowable
     }
 
     #[view]
-    public fun get_user_borrow_apy<CoinType>(market_id: u64): u256 {
-        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
+    public fun get_user_p2p_apy<CoinType>(market_id: u64): u256 {
         let (deposit_apy, borrow_apy) = {
             if(market_id == 0) {
                 mock_aries::get_market_apy<CoinType>()
@@ -119,8 +121,8 @@ module account::user_lens {
                 mock_echelon::get_market_apy<CoinType>()
             }
         };
-        let p2p_borrow_apy = borrow_apy * p2p_borrow_index / 1000000000000000000;
-        p2p_borrow_apy
+        let p2p_apy = (deposit_apy + borrow_apy) / 2;
+        p2p_apy
     }
 
     fun get_user_supply_balance(sender_addr: address, coin_type: TypeInfo): u256 {
@@ -189,8 +191,8 @@ module account::user_lens {
         let user_borrow_balance = get_user_borrow_balance(sender_addr, coin_type);
         let underlying_price = get_underlying_price(coin_type);
         // print(&user_borrow_balance);
-        let debt = user_borrow_balance * underlying_price;
-        let collateral = user_supply_balance * underlying_price;
+        let debt = math::wad_mul(user_borrow_balance, underlying_price);
+        let collateral = math::wad_mul(user_supply_balance, underlying_price);
         (collateral, debt)
     }
 

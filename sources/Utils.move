@@ -1,6 +1,7 @@
 module account::utils {
     use account::aurita_coin::{USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use account::storage;
+    use account::math;
     use std::vector;
     use std::debug::print;
     use std::string;
@@ -10,7 +11,7 @@ module account::utils {
     use account::interest_rate_manager;
 
     const BASE_12: u256 = 1000000000000; // 10^12
-    const TOKEN_UNIT: u256 = 1000000000000000000; // 10^18
+    const TOKEN_UNIT: u256 = 1000000; // 10^18
 
     struct LiquidityData has key {
         total_collateral: u256,
@@ -30,16 +31,20 @@ module account::utils {
             }
         );
     }
-
-    public fun get_user_supply_balance<CoinType>(user_addr: address): u256 {
-        let (in_p2p, on_pool) = storage::get_supply_balance<CoinType>(user_addr);
-        let total_supply = in_p2p + on_pool;
+    
+    public fun get_user_supply_balance<CoinType>(sender_addr: address): u256 {
+        let (in_p2p, on_pool) = storage::get_supply_balance<CoinType>(sender_addr);
+        let (pool_supply_index, pool_borrow_index) = storage::get_pool_index<CoinType>();
+        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
+        let total_supply = math::ray_mul(in_p2p, p2p_supply_index) + math::ray_mul(on_pool, pool_supply_index);
         total_supply
     }
 
-    public fun get_user_borrow_balance<CoinType>(user_addr: address): u256 {
-        let (in_p2p, on_pool) = storage::get_borrow_balance<CoinType>(user_addr);
-        let total_borrow = in_p2p + on_pool;
+    public fun get_user_borrow_balance<CoinType>(sender_addr: address): u256 {
+        let (in_p2p, on_pool) = storage::get_borrow_balance<CoinType>(sender_addr);
+        let (pool_supply_index, p2p_borrow_index) = storage::get_pool_index<CoinType>();
+        let (p2p_supply_index, p2p_borrow_index) = storage::get_p2p_index<CoinType>();
+        let total_borrow = math::ray_mul(in_p2p, p2p_borrow_index) + math::ray_mul(on_pool, p2p_borrow_index);
         total_borrow
     }
 
@@ -47,8 +52,7 @@ module account::utils {
         user_addr: address, underlying_price: u256
     ): u256 {
         let collateral =
-            get_user_supply_balance<CoinType>(user_addr) * underlying_price
-                / TOKEN_UNIT;
+            get_user_supply_balance<CoinType>(user_addr) * underlying_price / TOKEN_UNIT;
         collateral
     }
 
@@ -65,7 +69,7 @@ module account::utils {
         let coin_type = type_of<CoinType>();
         let asset_price: u256 = 0;
         if (coin_type == type_of<USDT>() || coin_type == type_of<USDC>()) {
-            asset_price = 1 * BASE_12;
+            asset_price = 1000000 * BASE_12;
         };
 
         if (coin_type == type_of<WBTC>()) {
@@ -165,8 +169,15 @@ module account::utils {
         };
         let debt = calculate_debt_value<CoinType>(user_addr, underlying_price);
         let collateral = calculate_collateral_value<CoinType>(user_addr, underlying_price);
-        let borrowable = collateral * ltv;
-        let max_debt = collateral * liquidation_threshold;
+        let borrowable = math::wad_mul(collateral, ltv);
+        let max_debt = math::wad_mul(collateral, liquidation_threshold);
+        // print(&string::utf8(b"collateral"));
+        // print(&collateral);
+        // print(&ltv);
+        // print(&borrowable);
+        // print(&debt);
+        // 635590000000000000000000 635580 * 10^18 * 9 * 10^17 = 5720220 * 10^35 / 10^18 = 5720220 * 10^17
+        // 900000000000000000
 
         if (market_coin == type_of<CoinType>() && amount_borrowed > 0) {
             debt = debt + amount_borrowed * underlying_price / TOKEN_UNIT;
@@ -175,9 +186,10 @@ module account::utils {
         if (market_coin == type_of<CoinType>() && amount_withdrawn > 0) {
             let withdrawn = amount_withdrawn * underlying_price / TOKEN_UNIT;
             collateral = collateral - withdrawn;
-            max_debt = max_debt - withdrawn * liquidation_threshold;
-            borrowable = borrowable - withdrawn * ltv;
+            max_debt = max_debt - math::wad_mul(withdrawn, liquidation_threshold);
+            borrowable = borrowable - math::wad_mul(withdrawn, ltv);
         };
+    
         let liquidity_data = borrow_global_mut<LiquidityData>(@account);
         liquidity_data.total_collateral = liquidity_data.total_collateral + collateral;
         liquidity_data.total_borrowable = liquidity_data.total_borrowable + borrowable;
