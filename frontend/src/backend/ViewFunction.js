@@ -124,6 +124,30 @@ export async function getUserHealthFactor(userAddress, market_id) {
     }
 }
 
+export async function getUserBorrowable(userAddress, market_id) {
+    let moduleAddress;
+    if(market_id === 0) {
+        moduleAddress = moduleAriesMarket;
+    } else {
+        moduleAddress = moduleEchelonMarket;
+    }
+
+    const payload = {
+        function: `${moduleAddress}::user_lens::get_borrowable`,
+        functionArguments: [userAddress, market_id],
+    };
+
+    try {
+        const result = (await aptos.view({ payload }))[0];
+        console.log(result);
+        return result;
+    } catch(error) {
+        console.log(error);
+        return;
+    }
+}
+
+
 export async function getUserSupplyAPY(coinSymbol, market_id) {
     let moduleAddress;
     if(market_id === 0) {
@@ -256,9 +280,3 @@ export async function getMarketLiquidity(coinSymbol, market_id) {
         return;
     }
 }
-
-async function f(){
-    await getMarketDepositAPY("USDT", 0);
-}
-
-f();
