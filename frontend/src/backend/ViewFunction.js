@@ -3,8 +3,8 @@ import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import { Network } from "aptos";
 const aptosConfig = new AptosConfig({ network: Network.TESTNET});
 export const aptos = new Aptos(aptosConfig);
-export const moduleAriesMarket = "0xd6e74f1e6d12931e46e492ee7ec858fdcd2bb5bb93899bf55282fbe5e99c29ca";
-export const moduleEchelonMarket = "";
+export const moduleAriesMarket = "0x69a668919f0081415a0f5576494839245619a24c5f34d0ed3d234ddd9939ed6f";
+export const moduleEchelonMarket = "0x6afef8ac2f7f908a684477ab24b1ff8a91e5ab6f2148e2c8c7ae43f0da0ae654";
 //===================================================================================
 //================================== User Lens ======================================
 //===================================================================================
@@ -31,11 +31,11 @@ export async function getUserAllSupplyPositions(userAddress, market_id) {
     }
 }
 
-async function f(){
-    await getUserAllSupplyPositions("0xfa86e77fffd89b9b35df378006904175a0fcdaa2dd7487bdab47168f7710f119", 0);
-}
+// async function f(){
+//     await getUserAllSupplyPositions("0xfa86e77fffd89b9b35df378006904175a0fcdaa2dd7487bdab47168f7710f119", 0);
+// }
 
-f();
+// f();
 
 
 export async function getUserAllBorrowPositions(userAddress, market_id) {
@@ -291,8 +291,30 @@ export async function getMarketLiquidity(coinSymbol, market_id) {
     }
 }
 
+
+export async function getAssetPrice(coinSymbol) {
+
+    const coin = `${moduleAriesMarket}::aurita_coin::${coinSymbol}`;
+
+    const payload = {
+        function: `${moduleAriesMarket}::market_lens::get_asset_price`,
+        typeArguments: [coin],
+        functionArguments: [],
+    };
+
+    try {
+        const result = (await aptos.view({ payload }))[0];
+        // console.log(result);
+        return result;
+    } catch(error) {
+        console.log(error);
+        return;
+    }
+}
+
+
 // async function f(){
-//     await getUserAllSupplyPositions("0xfa86e77fffd89b9b35df378006904175a0fcdaa2dd7487bdab47168f7710f119", 0);
+//     await getAssetPrice("WBTC");
 // }
 
 // f();
