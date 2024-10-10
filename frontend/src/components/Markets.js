@@ -18,6 +18,8 @@ import Paper from '@mui/material/Paper';
 import { useLocation } from "react-router-dom";
 import { useMarkets } from "../hooks/useMarkets";
 import { useMarketAction } from "../hooks/useWriteTx";
+import { Skeleton } from 'antd';
+
 
 function Markets(props) {
 	const market = props.market;
@@ -171,12 +173,12 @@ function Markets(props) {
 					<div className="boxDescription">
 						Supply Markets
 					</div>
-					<TableContainer component={Paper}>
+					<TableContainer component={Paper} style={{marginBottom: '1em'}}>
 					<Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
 						<TableHead >
 							<TableRow >
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Assets</TableCell>
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Wallet</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%'}} align="left">Assets</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%'}} align="left">Wallet</TableCell>
 								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">APY</TableCell>
 							</TableRow>
 						</TableHead>
@@ -204,7 +206,12 @@ function Markets(props) {
 									borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
 									{marketData ?
 										<>{marketData[token.ticker]['deposit_apy']}%</> :
-										<>"Loading"</>
+										<><Skeleton.Input
+										active
+										style={{
+										  margin: -6,
+										}}
+									  /></>
 									}
 								</TableCell>
 							</TableRow>
@@ -215,7 +222,7 @@ function Markets(props) {
 
 				</div>
 				<div className="apyBox">
-				<TableContainer component={Paper}>
+				<TableContainer component={Paper} style={{marginBottom: '1em'}}>
 					<Table  aria-label="simple table">
 						<TableHead>
 							<TableRow>
@@ -241,12 +248,12 @@ function Markets(props) {
 					<div className="boxDescription">
 						Borrow Markets
 					</div>
-					<TableContainer component={Paper}>
+					<TableContainer component={Paper} style={{marginBottom: '1em', textAlign: 'right'}}>
 					<Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
 						<TableHead >
 							<TableRow>
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">APY</TableCell>
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Liquidity</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%', }} align="left">APY</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%'}} align="left">Liquidity</TableCell>
 								<TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Assets</TableCell>
 							</TableRow>
 						</TableHead>
@@ -266,13 +273,23 @@ function Markets(props) {
 									borderBottomLeftRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
 										{marketData ?
 											<>{marketData[token.ticker]['borrow_apy']}%</> :
-											<>"Loading"</>
+											<><Skeleton.Input
+										active
+										style={{
+										  margin: -6,
+										}}
+									  /></>
 										}
 									</TableCell>
 								<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
 									{marketData ?
 												<>{marketData[token.ticker]['market_liquidity']}</> :
-												<>"Loading"</>
+												<><Skeleton.Input
+										active
+										style={{
+										  margin: -6,
+										}}
+									  /></>
 									}
 								</TableCell>
 								<TableCell style={{ borderTopRightRadius: '10px',

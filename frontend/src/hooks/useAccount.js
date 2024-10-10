@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getUserAllBorrowPositions, getUserAllSupplyPositions, getUserSupplyAmount, getUserBorrowAmount, getUserSupplyAPY, getUserBorrowAPY } from "../backend/ViewFunction";
+import { getUserAllBorrowPositions, getUserHealthFactor, getUserAllSupplyPositions, getUserSupplyAmount, getUserBorrowAmount, getUserSupplyAPY, getUserBorrowAPY } from "../backend/ViewFunction";
 
 export const useAccount = (walletAddress, marketId) => {
     const [accountData, setAccountData] = useState(null);
@@ -82,7 +82,9 @@ export const useAccount = (walletAddress, marketId) => {
                 account_data['positions']['borrow'] = _data;
             }
         }
-
+    
+        // account_data['health_factor'] = await getUserHealthFactor(walletAddress, marketId) / 1e18;
+        // console.log(account_data['health_factor']);
         setAccountData(account_data);
     }
 
