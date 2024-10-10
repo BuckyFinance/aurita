@@ -23,7 +23,7 @@ export async function getUserAllSupplyPositions(userAddress, market_id) {
     };
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -47,12 +47,12 @@ export async function getUserAllBorrowPositions(userAddress, market_id) {
     }
 
     const payload = {
-        function: `${moduleAddress}::user_lens::get_borrow_positions`,
+        function: `${moduleAddress}::user_lens::get_total_borrow`,
         functionArguments: [userAddress],
     };
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -77,7 +77,7 @@ export async function getUserSupplyAmount(coinSymbol, userAddress, market_id) {
 
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -102,7 +102,7 @@ export async function getUserBorrowAmount(coinSymbol, userAddress, market_id) {
 
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -125,7 +125,7 @@ export async function getUserHealthFactor(userAddress, market_id) {
 
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -168,14 +168,14 @@ export async function getUserSupplyAPY(coinSymbol, market_id) {
     const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
 
     const payload = {
-        function: `${moduleAddress}::user_lens::get_user_supply_apy`,
+        function: `${moduleAddress}::user_lens::get_user_p2p_apy`,
         typeArguments: [coin],
         functionArguments: [market_id],
     };
 
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -194,14 +194,14 @@ export async function getUserBorrowAPY(coinSymbol, market_id) {
     const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
 
     const payload = {
-        function: `${moduleAddress}::user_lens::get_user_borrow_apy`,
+        function: `${moduleAddress}::user_lens::get_user_p2p_apy`,
         typeArguments: [coin],
         functionArguments: [market_id],
     };
 
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -232,9 +232,10 @@ export async function getMarketDepositAPY(coinSymbol, market_id) {
 
     let result;
     try {
-        result = (await aptos.view({ payload }))[0]; 
-        console.log(result);
-    } catch (error) {
+        const result = (await aptos.view({ payload }))[0];
+        //console.log(result);
+        return result;
+    } catch(error) {
         console.log(error);
         return;
     }
@@ -257,7 +258,7 @@ export async function getBorrowAPY(coinSymbol, market_id) {
 
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
@@ -282,10 +283,16 @@ export async function getMarketLiquidity(coinSymbol, market_id) {
 
     try {
         const result = (await aptos.view({ payload }))[0];
-        console.log(result);
+        //console.log(result);
         return result;
     } catch(error) {
         console.log(error);
         return;
     }
 }
+
+// async function f(){
+//     await getUserAllSupplyPositions("0xfa86e77fffd89b9b35df378006904175a0fcdaa2dd7487bdab47168f7710f119", 0);
+// }
+
+// f();

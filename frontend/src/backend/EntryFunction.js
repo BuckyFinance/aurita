@@ -2,7 +2,7 @@ import { aptos } from "../App.js";
 import { moduleAriesMarket } from "../App.js";
 import { moduleEchelonMarket } from "../App.js";
 
-export async function mintCoin(coinSymbol, userAddress, amount, signAndSubmitTransaction) {
+export async function mintCoin(coinSymbol, userAddress, amount, market_id, signAndSubmitTransaction) {
     let moduleAddress;
     if(market_id === 0) {
         moduleAddress = moduleAriesMarket;
