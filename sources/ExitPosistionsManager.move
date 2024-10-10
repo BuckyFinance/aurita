@@ -1,5 +1,6 @@
 module account::exit_positions_manager {
     use std::signer;
+    use std::debug::print;
     use account::utils;
     use account::math;
     use account::storage;
@@ -340,7 +341,9 @@ module account::exit_positions_manager {
             utils::get_liquidity_data<CoinType>(sender_addr, withdrawn_amount, 0, market_id);
         let health_factor = storage::max_u256();
         if (total_debt > 0) {
-            health_factor = total_max_debt / total_debt;
+            // print(&total_max_debt);
+            // print(&total_debt);
+            health_factor = math::wad_div(total_max_debt, total_debt);
         };
         health_factor
     }
