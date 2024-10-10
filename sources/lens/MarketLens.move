@@ -1,6 +1,7 @@
 module account::market_lens {
     use account::mock_aries;
     use account::mock_echelon;
+    use account::utils;
 
     #[view]
     public fun get_market_liquidity<CoinType>(market_id: u64): u256 {

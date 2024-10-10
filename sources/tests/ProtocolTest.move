@@ -3,7 +3,7 @@ module account::protocol_test {
     use std::vector;
     use account::entry_positions_manager;
     use account::exit_positions_manager;
-    use account::mock_aries;
+    use account::mock_echelon;
     use account::storage;
     use account::user_lens;
     use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
@@ -17,7 +17,7 @@ module account::protocol_test {
     const ERR_TEST: u64 = 1000;
     const INITIAL_COIN: u64 = 10000000000000; // 10^7
     const INITIAL_COIN_MOCK_POOL: u256 = 1000000000000; // 10^6
-    const ARIES_MARKET: u64 = 0;
+    const ECHELON_MARKET: u64 = 1;
 
     #[test_only]
     public fun init_and_mint_coin(sender: &signer) {
@@ -61,8 +61,8 @@ module account::protocol_test {
         init_and_mint_coin(user1);
 
         // init pool for mock lending
-        mock_aries::init_module_for_tests(admin);
-        mock_aries::initialize_market(admin);
+        mock_echelon::init_module_for_tests(admin);
+        mock_echelon::initialize_market(admin);
 
         // initialize storage
         storage::init_module_for_tests(admin);
@@ -77,11 +77,11 @@ module account::protocol_test {
 
         // user1 supply to pool
         entry_positions_manager::supply<USDT>(
-            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+            user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDC>(
-            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+            user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
         let total_supply = user_lens::get_total_supply<USDT>(signer::address_of(user1));
@@ -120,7 +120,7 @@ module account::protocol_test {
 
         // user1 supply to pool
         entry_positions_manager::supply<USDT>(
-            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+            user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
         init_and_mint_coin(user2);
@@ -128,45 +128,45 @@ module account::protocol_test {
         init_and_mint_coin(user4);
 
         entry_positions_manager::supply<USDT>(
-            user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
+            user2, signer::address_of(user2), 3000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDT>(
-            user3, signer::address_of(user3), 3000000, 100, ARIES_MARKET
+            user3, signer::address_of(user3), 3000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<CAKE>(
-            user3, signer::address_of(user3), 3000000, 100, ARIES_MARKET
+            user3, signer::address_of(user3), 3000000, 100, ECHELON_MARKET
         );
 
         // supply 10 Bitcoin = 635590 USDT
         entry_positions_manager::supply<WBTC>(
-            user4, signer::address_of(user4), 10000000, 100, ARIES_MARKET
+            user4, signer::address_of(user4), 10000000, 100, ECHELON_MARKET
         );
         let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
         // calculate borrowable
-        let borrowable = user_lens::get_borrowable(signer::address_of(user4), ARIES_MARKET);
+        let borrowable = user_lens::get_borrowable(signer::address_of(user4), ECHELON_MARKET);
         assert!(borrowable == 508472000000, ERR_TEST);
 
         // try borrow amount greater than borrowable amount
-        entry_positions_manager::borrow<USDT>(user4, 508472000000, 100, ARIES_MARKET);
+        entry_positions_manager::borrow<USDT>(user4, 508472000000, 100, ECHELON_MARKET);
         (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
 
         // borrow 200000 USDT
-        // entry_positions_manager::borrow<USDT>(user4, 200000000000, 100, ARIES_MARKET);
+        // entry_positions_manager::borrow<USDT>(user4, 200000000000, 100, ECHELON_MARKET);
         // (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
         let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user4));
         // print(&total_borrow);
         assert!(total_borrow == 508472000000, ERR_TEST);
 
-        let hf = exit_positions_manager::get_user_health_factor<USDT>(signer::address_of(user4), 0, ARIES_MARKET);
+        let hf = exit_positions_manager::get_user_health_factor<USDT>(signer::address_of(user4), 0, ECHELON_MARKET);
         // print(&hf);
         assert!(hf == 1125000000000000000, ERR_TEST);
 
-        let user_hf = user_lens::get_health_factor(signer::address_of(user4), ARIES_MARKET);
+        let user_hf = user_lens::get_health_factor(signer::address_of(user4), ECHELON_MARKET);
         assert!(hf == 1125000000000000000, ERR_TEST);
 
         let borrow_positions_list = user_lens::get_borrow_positions(signer::address_of(user4));
@@ -184,8 +184,8 @@ module account::protocol_test {
         let supply_positions_list = user_lens::get_supply_positions(signer::address_of(user3));
         assert!(vector::length(&supply_positions_list) == 2, ERR_TEST);
 
-        let p2p_apy = user_lens::get_user_p2p_apy<WBTC>(ARIES_MARKET);
-        assert!(p2p_apy == 43400000000000000, ERR_TEST);
+        let p2p_apy = user_lens::get_user_p2p_apy<WBTC>(ECHELON_MARKET);
+        assert!(p2p_apy == 76000000000000000, ERR_TEST);
     }
 
     #[
@@ -213,21 +213,21 @@ module account::protocol_test {
     
         // user1 supply to pool
         entry_positions_manager::supply<WBTC>(
-            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+            user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDC>(
-            user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
+            user2, signer::address_of(user2), 3000000, 100, ECHELON_MARKET
         );
 
-        entry_positions_manager::borrow<USDT>(user1, 1000000, 100, ARIES_MARKET);
+        entry_positions_manager::borrow<USDT>(user1, 1000000, 100, ECHELON_MARKET);
         // print(&std::coin::balance<USDT>(signer::address_of(user1)));
 
-        entry_positions_manager::borrow<USDT>(user2, 2000000, 100, ARIES_MARKET);
+        entry_positions_manager::borrow<USDT>(user2, 2000000, 100, ECHELON_MARKET);
         // print(&std::coin::balance<USDT>(signer::address_of(user2)));
 
         entry_positions_manager::supply<USDT>(
-            user3, signer::address_of(user3), 3500000, 100, ARIES_MARKET
+            user3, signer::address_of(user3), 3500000, 100, ECHELON_MARKET
         );
 
         let (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
@@ -260,23 +260,23 @@ module account::protocol_test {
     
         // user1 supply to pool
         entry_positions_manager::supply<USDT>(
-            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+            user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDT>(
-            user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
+            user2, signer::address_of(user2), 3000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDC>(
-            user3, signer::address_of(user3), 10000000, 100, ARIES_MARKET
+            user3, signer::address_of(user3), 10000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::borrow<USDT>(
-            user3, 8000000, 100, ARIES_MARKET
+            user3, 8000000, 100, ECHELON_MARKET
         );
 
         exit_positions_manager::withdraw<USDT>(
-            user1, 500000, signer::address_of(user1), 100, ARIES_MARKET
+            user1, 500000, signer::address_of(user1), 100, ECHELON_MARKET
         );
 
         let total_supply = user_lens::get_total_supply<USDT>(signer::address_of(user1));
@@ -310,23 +310,23 @@ module account::protocol_test {
     
         // user1 supply to pool
         entry_positions_manager::supply<USDT>(
-            user1, signer::address_of(user1), 1000000, 100, ARIES_MARKET
+            user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDT>(
-            user2, signer::address_of(user2), 3000000, 100, ARIES_MARKET
+            user2, signer::address_of(user2), 3000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDC>(
-            user3, signer::address_of(user3), 10000000, 100, ARIES_MARKET
+            user3, signer::address_of(user3), 10000000, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::borrow<USDT>(
-            user3, 8000000, 100, ARIES_MARKET
+            user3, 8000000, 100, ECHELON_MARKET
         );
 
         exit_positions_manager::repay<USDT>(
-            user3, signer::address_of(user3), 5000000, 100, ARIES_MARKET
+            user3, signer::address_of(user3), 5000000, 100, ECHELON_MARKET
         );
 
         let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user3));
