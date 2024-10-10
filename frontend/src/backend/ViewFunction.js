@@ -1,6 +1,8 @@
 
-import { Aptos } from "@aptos-labs/ts-sdk";
-export const aptos = new Aptos();
+import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
+import { Network } from "aptos";
+const aptosConfig = new AptosConfig({ network: Network.TESTNET});
+export const aptos = new Aptos(aptosConfig);
 export const moduleAriesMarket = "0xd6e74f1e6d12931e46e492ee7ec858fdcd2bb5bb93899bf55282fbe5e99c29ca";
 export const moduleEchelonMarket = "";
 //===================================================================================
@@ -28,6 +30,13 @@ export async function getUserAllSupplyPositions(userAddress, market_id) {
         return;
     }
 }
+
+async function f(){
+    await getUserAllSupplyPositions("0xfa86e77fffd89b9b35df378006904175a0fcdaa2dd7487bdab47168f7710f119", 0);
+}
+
+f();
+
 
 export async function getUserAllBorrowPositions(userAddress, market_id) {
     let moduleAddress;

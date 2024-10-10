@@ -32,4 +32,9 @@ module account::market_lens {
             borrow_apy
         }
     }
+
+    #[view]
+    public fun get_asset_price<CoinType>(): u256 {
+        utils::get_asset_price<CoinType>()
+    }
 }
