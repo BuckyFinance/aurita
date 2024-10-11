@@ -75,6 +75,9 @@ module account::protocol_test {
     ) {
         test_init(admin, user1, aptos_framework);
 
+        let user1_balance = user_lens::get_balance<USDT>(signer::address_of(user1));
+        assert!(user1_balance == 10000000000000, ERR_TEST);
+
         // user1 supply to pool
         entry_positions_manager::supply<USDT>(
             user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
@@ -126,6 +129,7 @@ module account::protocol_test {
         init_and_mint_coin(user2);
         init_and_mint_coin(user3);
         init_and_mint_coin(user4);
+        
 
         entry_positions_manager::supply<USDT>(
             user2, signer::address_of(user2), 3000000, 100, ECHELON_MARKET

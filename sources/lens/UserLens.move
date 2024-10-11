@@ -5,6 +5,7 @@ module account::user_lens {
     use account::mock_aries;
     use account::mock_echelon;
     use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use aptos_framework::coin;
     use std::vector;
     use std::debug::print;
     use std::string::{Self, String};
@@ -123,6 +124,15 @@ module account::user_lens {
         };
         let p2p_apy = (deposit_apy + borrow_apy) / 2;
         p2p_apy
+    }
+
+    #[view]
+    public fun get_balance<CoinType>(sender_addr: address): u64 {
+        if(coin::is_account_registered<CoinType>(sender_addr) == false) {
+            return 0
+        };
+
+        coin::balance<CoinType>(sender_addr)
     }
 
     fun get_user_supply_balance(sender_addr: address, coin_type: TypeInfo): u256 {
