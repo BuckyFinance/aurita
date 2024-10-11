@@ -312,6 +312,30 @@ export async function getAssetPrice(coinSymbol) {
     }
 }
 
+export async function getUserBalance(userAddress, coinSymbol, market_id) {
+    let moduleAddress;
+    if(market_id === 0) {
+        moduleAddress = moduleAriesMarket;
+    } else {
+        moduleAddress = moduleEchelonMarket;
+    }
+    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const payload = {
+        function: `${moduleAddress}::user_lens::get_balance`,
+        typeArguments: [coin],
+        functionArguments: [userAddress],
+    };
+    
+    let result;
+    try {
+        const result = (await aptos.view({ payload }))[0];
+        //console.log(result);
+        return result;
+    } catch(error) {
+        console.log(error);
+        return;
+    }
+}
 
 // async function f(){
 //     await getAssetPrice("WBTC");
