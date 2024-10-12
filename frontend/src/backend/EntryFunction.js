@@ -137,7 +137,7 @@ export async function repay(coinSymbol, userAddress, amount, market_id, signAndS
 
     const payload = {
         data: {
-            function: `${moduleAddress}::entry_positions_manager::borrow`,
+            function: `${moduleAddress}::exit_positions_manager::repay`,
             typeArguments: [coin],
             functionArguments: [onBehalfAddress, amount_in_wei, iterations, market_id],
         }

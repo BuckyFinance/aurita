@@ -3,8 +3,8 @@ import { Aptos, AptosConfig } from "@aptos-labs/ts-sdk";
 import { Network } from "aptos";
 const aptosConfig = new AptosConfig({ network: Network.TESTNET});
 export const aptos = new Aptos(aptosConfig);
-export const moduleAriesMarket = "0x69a668919f0081415a0f5576494839245619a24c5f34d0ed3d234ddd9939ed6f";
-export const moduleEchelonMarket = "0x6afef8ac2f7f908a684477ab24b1ff8a91e5ab6f2148e2c8c7ae43f0da0ae654";
+export const moduleAriesMarket = "0xb68376898967db02a138fc4e28d753da9ae938a83941acb5985b1c654222cdd9";
+export const moduleEchelonMarket = "0x0d498a73af812e151c964716494c2cb560b77081b7ab9a6cb7480a1eae5afad5";
 //===================================================================================
 //================================== User Lens ======================================
 //===================================================================================
@@ -47,7 +47,7 @@ export async function getUserAllBorrowPositions(userAddress, market_id) {
     }
 
     const payload = {
-        function: `${moduleAddress}::user_lens::get_total_borrow`,
+        function: `${moduleAddress}::user_lens::get_borrow_positions`,
         functionArguments: [userAddress],
     };
     try {
@@ -319,6 +319,7 @@ export async function getUserBalance(userAddress, coinSymbol, market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
+    console.log(coinSymbol);
     const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
     const payload = {
         function: `${moduleAddress}::user_lens::get_balance`,

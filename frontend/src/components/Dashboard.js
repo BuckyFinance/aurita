@@ -102,9 +102,11 @@ function Dashboard(props){
 
             let _total = 0;
 
+            //console.log("Borrow ", accountData['positions']['borrow']);
+
             if(accountData['positions']['borrow']){
                 Object.entries(accountData['positions']['borrow']).map(([collateral, data]) => {
-                    total += marketData[collateral] * data.amount;
+                    _total += marketData[collateral]['price'] * data.amount;
                 });
                 setTotalLoan(_total);
             }
@@ -113,7 +115,7 @@ function Dashboard(props){
         }
     }, [marketData, accountData]);
     async function MintToken(){
-        await mintCoin("WBTC", account.address, 100000, 0, signAndSubmitTransaction);
+        await mintCoin("USDT", account.address, 100000, 0, signAndSubmitTransaction);
         console.log("MINTED");
     }
 

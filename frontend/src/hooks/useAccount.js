@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getUserAllBorrowPositions, getUserHealthFactor, getUserAllSupplyPositions, getUserSupplyAmount, getUserBorrowAmount, getUserSupplyAPY, getUserBorrowAPY } from "../backend/ViewFunction";
+import { getUserAllBorrowPositions, getUserHealthFactor, getUserBorrowable, getUserAllSupplyPositions, getUserBalance, getUserSupplyAmount, getUserBorrowAmount, getUserSupplyAPY, getUserBorrowAPY } from "../backend/ViewFunction";
 
-export const useAccount = (walletAddress, marketId) => {
+export const useAccount = (walletAddress, marketId, tokenList) => {
     const [accountData, setAccountData] = useState(null);
 
     const SUPPLY = 0;
@@ -34,6 +34,19 @@ export const useAccount = (walletAddress, marketId) => {
         }
 
         return promises;
+    }
+
+    const fetchAccountBalance = async () => {
+        let promises = []
+        
+        tokenList.forEach((token) => {
+            promises.push(getUserBalance(walletAddress, token.ticker, marketId));
+        });
+
+        let data = await Promise.all(promises);
+        data = data.map(e => e / 1e6);
+
+        return data;
     }
 
     const fetchPositionData = async() => {
@@ -85,6 +98,15 @@ export const useAccount = (walletAddress, marketId) => {
     
         // account_data['health_factor'] = await getUserHealthFactor(walletAddress, marketId) / 1e18;
         // console.log(account_data['health_factor']);
+
+        account_data['balance'] = await fetchAccountBalance();
+        account_data['balance_by_ticker'] = {}
+        tokenList.forEach((token, index) => {
+            account_data['balance_by_ticker'][token.ticker] = account_data['balance'][index];
+        });
+        console.log(account_data['balance']);
+        account_data['borrowable'] = await getUserBorrowable(walletAddress, marketId) / 1e6;
+
         setAccountData(account_data);
     }
 
