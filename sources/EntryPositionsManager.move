@@ -38,6 +38,8 @@ module account::entry_positions_manager {
             storage::open_position(user);
         };
         storage::add_supply_positions<CoinType>(user_addr);
+        let price = utils::get_asset_price<CoinType>();
+        storage::add_total_supply(amount, price);
         assert!(amount > 0, EAMOUNT_ZERO);
 
         let (reserveFactor, p2pCursor) = storage::get_market<CoinType>();
@@ -121,6 +123,8 @@ module account::entry_positions_manager {
     ) {
         let user_addr = signer::address_of(user);
         storage::add_borrow_positions<CoinType>(user_addr);
+        let price = utils::get_asset_price<CoinType>();
+        storage::add_total_borrow(amount, price);
         assert!(amount > 0, EAMOUNT_ZERO);
 
         let (reserveFactor, p2pCursor) = storage::get_market<CoinType>();

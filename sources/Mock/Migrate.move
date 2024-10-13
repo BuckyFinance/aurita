@@ -1,5 +1,5 @@
 module account::migrate {
-    use account::aurita_coin;
+    use coin_addr::aurita_coin;
     use std::signer;
     use std::string;
     use account::entry_positions_manager;

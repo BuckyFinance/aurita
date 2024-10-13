@@ -4,7 +4,7 @@ module account::mock_aries_test {
     use std::string;
     use account::mock_aries;
     use aptos_framework::coin::{Self, Coin};
-    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use coin_addr::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use aptos_framework::account;
 
     const BASE_12: u256 = 1000000000000;
