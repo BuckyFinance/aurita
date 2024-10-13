@@ -12,6 +12,8 @@ import Echelon from "./../media/echelon.png"
 import { useMarkets } from "../hooks/useMarkets";
 import { useAccount } from "../hooks/useAccount";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import tokenList from "../tokenList.json";
+
 
 export const marketList = [
 	{
@@ -36,7 +38,7 @@ function Aurita(){
 
     const [market, setMarket] = useState(marketList[0]);
 	const {marketData} = useMarkets(market.id);
-	const {accountData} = useAccount(account ? account.address : null, market.id);
+	const {accountData} = useAccount(account ? account.address : null, market.id, tokenList);
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -69,7 +71,7 @@ function Aurita(){
                     
                     <Routes>
                         <Route path="/" element={<Dashboard market={market} marketData={marketData} accountData={accountData}/>}></Route>
-                        <Route path="/markets" element={<Markets market={market} marketData={marketData} />} />
+                        <Route path="/markets" element={<Markets accountData={accountData} market={market} marketData={marketData} />} />
                         <Route path="/migrate" element={<Migrate market={market}/>} />
                     </Routes>
                 </div>

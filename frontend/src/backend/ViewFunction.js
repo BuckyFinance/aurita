@@ -47,7 +47,7 @@ export async function getUserAllBorrowPositions(userAddress, market_id) {
     }
 
     const payload = {
-        function: `${moduleAddress}::user_lens::get_total_borrow`,
+        function: `${moduleAddress}::user_lens::get_borrow_positions`,
         functionArguments: [userAddress],
     };
     try {
@@ -344,7 +344,6 @@ export async function getTotalSupply(market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-
     const payload = {
         function: `${moduleAriesMarket}::market_lens::get_total_supply`,
         functionArguments: [],

@@ -26,11 +26,22 @@ import { Flex, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Skeleton } from 'antd';
 
+const MemoizedSkeletonNode = React.memo(() => (
+    <Skeleton.Node
+      active
+      style={{
+        width: 160,
+        height: 48,
+        marginTop: -20,
+      }}
+    />
+  ));
 
 function Dashboard(props){
     const { account, signAndSubmitTransaction } = useWallet();
-    const [totalCollateral, setTotalCollateral] = useState(0);
-    const [totalLoan, setTotalLoan] = useState(0);
+    const [totalCollateral, setTotalCollateral] = useState(null);
+    const [totalLoan, setTotalLoan] = useState(null);
+    const [healthFactor, setHealthFactor] = useState(null);
 
     const accountData = props.accountData;
     const marketData = props.marketData;
@@ -42,15 +53,8 @@ function Dashboard(props){
                 </div>
                 <div className="box-content">
                     <div>
-                    {props.boxContent}
-                    {/* <Skeleton
-                    avatar
-                    style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.1)', // Adjust transparency if needed
-                        color: 'white', // Text color for skeleton lines
-                    }}
-                    active
-                    /> */}
+                    {props.loaded && props.boxContent}
+                    {!props.loaded && <MemoizedSkeletonNode/>}
 
 
 
@@ -61,6 +65,9 @@ function Dashboard(props){
     }
 
     function formatNumber(value) {
+        if(value == null){
+            return "0";
+        }
         if (value >= 1_000_000) {
             return (value / 1_000_000).toFixed(2) + 'M';
         } else if (value >= 1_000) {
@@ -68,6 +75,18 @@ function Dashboard(props){
         } else {
             return value.toString();
         }
+    }
+
+    function getHealthFactor(a, b){
+        console.log("AB " , a, b);
+        if(true){
+            if(b == 0){
+                return setHealthFactor("∞");
+            }else{
+                return setHealthFactor((a / b).toFixed(2));
+            }
+        }
+        return null;
     }
     
     useEffect(() => {
@@ -81,20 +100,24 @@ function Dashboard(props){
                 setTotalCollateral(total);
             }
 
-            total = 0;
+            let _total = 0;
+
+            //console.log("Borrow ", accountData['positions']['borrow']);
 
             if(accountData['positions']['borrow']){
                 Object.entries(accountData['positions']['borrow']).map(([collateral, data]) => {
-                    total += marketData[collateral] * data.amount;
+                    _total += marketData[collateral]['price'] * data.amount;
                 });
-                setTotalLoan(total);
+                setTotalLoan(_total);
             }
+
+            getHealthFactor(total, _total);
         }
     }, [marketData, accountData]);
-    // async function MintToken(){
-    //     await mintCoin("WETH", account.address, 10000000, 0, signAndSubmitTransaction);
-    //     console.log("MINTED");
-    // }
+    async function MintToken(){
+        await mintCoin("USDT", account.address, 100000, 0, signAndSubmitTransaction);
+        console.log("MINTED");
+    }
 
     async function f(){
         console.log(props.accountData);
@@ -104,12 +127,12 @@ function Dashboard(props){
     
     return (
         <>
-                {/* <button onClick={() => f()}>MINT</button> */}
+                {/* <button onClick={() => MintToken()}>MINT</button> */}
             <div className="dashboard">
                 <div className="infoBox">
-                    <DataBox name='Total collateral' boxContent={`$${formatNumber(totalCollateral)}`}></DataBox>
-                    <DataBox name='Total loan' boxContent={`$${formatNumber(totalLoan)}`}></DataBox>
-                    <DataBox name='Health factor' boxContent='0.56'></DataBox>
+                    <DataBox name='Total collateral' loaded={marketData != null} boxContent={`$${formatNumber(totalCollateral)}`}></DataBox>
+                    <DataBox name='Total loan' loaded={marketData != null}  boxContent={`$${formatNumber(totalLoan)}`}></DataBox>
+                    <DataBox name='Health factor' loaded={marketData != null}  boxContent={marketData ? healthFactor  : null}></DataBox>
                 </div>
                 <div className="dashboard-container2">
                     <div className="dashboardBox" style={{marginRight: '1em'}}>

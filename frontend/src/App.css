@@ -858,3 +858,10 @@ header {
     z-index: 100;
     position: relative;
   }
+
+  .ant-skeleton-image {
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.15) 37%, rgba(255, 255, 255, 0.06) 63%) !important;
+  }
+  .ant-skeleton-input {
+    background-image: linear-gradient(90deg, rgba(255, 255, 255, 0.06) 25%, rgba(255, 255, 255, 0.15) 37%, rgba(255, 255, 255, 0.06) 63%) !important;
+  }

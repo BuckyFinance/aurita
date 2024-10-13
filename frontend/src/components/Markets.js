@@ -18,10 +18,13 @@ import Paper from '@mui/material/Paper';
 import { useLocation } from "react-router-dom";
 import { useMarkets } from "../hooks/useMarkets";
 import { useMarketAction } from "../hooks/useWriteTx";
+import { Skeleton } from 'antd';
+
 
 function Markets(props) {
 	const market = props.market;
 	const marketData = props.marketData;
+	const accountData = props.accountData;
 
 	const [isOpen, setIsOpen] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
@@ -72,6 +75,19 @@ function Markets(props) {
 
 	const changeAmount = (e) => {
 		setTokenAmount(e.target.value);
+	}
+
+	function Info(props){
+		return (
+			<div className="info">
+				<div className="leftInfo">
+					{props.leftInfo}
+				</div>
+				<div className="rightInfo">
+					{props.rightInfo}
+				</div>
+			</div>
+		)
 	}
 
 	return (
@@ -143,23 +159,16 @@ function Markets(props) {
 						</div>
 					</div>
 					<div className="infoContainer">
-						<div className="info">
-							<div className="leftInfo">
-								APY
-							</div>
-							<div className="rightInfo">
-								56.33%
-							</div>
-						</div>
-
-						<div className="info">
-							<div className="leftInfo">
-								P2P APY
-							</div>
-							<div className="rightInfo">
-								123.32%
-							</div>
-						</div>
+						{selectedTab == 0 &&
+							<Info leftInfo="Max Amount" rightInfo={accountData ? accountData['balance_by_ticker'][token.ticker] : null}/>
+							// Supply
+						}
+						{selectedTab == 2 &&
+							<Info leftInfo="Max Amount" rightInfo={accountData ? (accountData['borrowable'] / marketData[token.ticker].price).toFixed(2) : null}/>
+							// Borrow
+						}
+						<Info leftInfo="APY" rightInfo="123.12%"/>
+						<Info leftInfo="P2P APY" rightInfo="443.12%"/>
 					</div>
 					<div className="migrateButton" onClick={() => execute()}>{tabs[selectedTab]}</div>
 				</div>
@@ -171,17 +180,17 @@ function Markets(props) {
 					<div className="boxDescription">
 						Supply Markets
 					</div>
-					<TableContainer component={Paper}>
+					<TableContainer component={Paper} style={{marginBottom: '1em'}}>
 					<Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
 						<TableHead >
 							<TableRow >
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Assets</TableCell>
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Wallet</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%'}} align="left">Assets</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%'}} align="left">Wallet</TableCell>
 								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">APY</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
-						{tokenList.map((token) => (
+						{tokenList.map((token, index) => (
 							<TableRow
 							key={token.name}
 							sx= {{ 'td': { border: 0 }, 'th': { border: 0 }, '&:hover': {
@@ -199,12 +208,25 @@ function Markets(props) {
 										{token.ticker}
 									</div>
 								</TableCell>
-								<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">100.00</TableCell>
+								<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{marketData && accountData ?
+										<>{accountData['balance'][index]}</> :
+										<><Skeleton.Input
+										active
+										style={{
+										  margin: -6,
+										}}
+									  /></>
+									} </TableCell>
 								<TableCell style={{borderTopRightRadius: '10px',
 									borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
-									{marketData ?
+									{marketData && accountData ?
 										<>{marketData[token.ticker]['deposit_apy']}%</> :
-										<>"Loading"</>
+										<><Skeleton.Input
+										active
+										style={{
+										  margin: -6,
+										}}
+									  /></>
 									}
 								</TableCell>
 							</TableRow>
@@ -215,7 +237,7 @@ function Markets(props) {
 
 				</div>
 				<div className="apyBox">
-				<TableContainer component={Paper}>
+				<TableContainer component={Paper} style={{marginBottom: '1em'}}>
 					<Table  aria-label="simple table">
 						<TableHead>
 							<TableRow>
@@ -241,12 +263,12 @@ function Markets(props) {
 					<div className="boxDescription">
 						Borrow Markets
 					</div>
-					<TableContainer component={Paper}>
+					<TableContainer component={Paper} style={{marginBottom: '1em', textAlign: 'right'}}>
 					<Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
 						<TableHead >
 							<TableRow>
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">APY</TableCell>
-								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Liquidity</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%', }} align="left">APY</TableCell>
+								<TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724', width: '33%'}} align="left">Liquidity</TableCell>
 								<TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Assets</TableCell>
 							</TableRow>
 						</TableHead>
@@ -264,15 +286,25 @@ function Markets(props) {
 							>
 								<TableCell style={{borderTopLeftRadius: '10px',
 									borderBottomLeftRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
-										{marketData ?
+										{marketData && accountData ?
 											<>{marketData[token.ticker]['borrow_apy']}%</> :
-											<>"Loading"</>
+											<><Skeleton.Input
+										active
+										style={{
+										  margin: -6,
+										}}
+									  /></>
 										}
 									</TableCell>
 								<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
-									{marketData ?
+									{marketData && accountData ?
 												<>{marketData[token.ticker]['market_liquidity']}</> :
-												<>"Loading"</>
+												<><Skeleton.Input
+										active
+										style={{
+										  margin: -6,
+										}}
+									  /></>
 									}
 								</TableCell>
 								<TableCell style={{ borderTopRightRadius: '10px',
