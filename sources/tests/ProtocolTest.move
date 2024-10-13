@@ -6,7 +6,8 @@ module account::protocol_test {
     use account::mock_echelon;
     use account::storage;
     use account::user_lens;
-    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use account::market_lens;
+    use coin_addr::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use aptos_framework::timestamp;
     use std::debug::print;
     use account::utils;
@@ -49,14 +50,14 @@ module account::protocol_test {
 
     #[test_only(admin = @account, user1 = @0x1001)]
     public fun test_init(
-        admin: &signer, user1: &signer, aptos_framework: &signer
+        admin: &signer, user1: &signer, coin_signer: &signer, aptos_framework: &signer
     ) {
 
         // set up timestamp
         set_up_test_for_time(aptos_framework);
 
         // mint coin for admin and user
-        aurita_coin::init_module_for_tests(admin);
+        aurita_coin::init_module_for_tests(coin_signer);
         init_and_mint_coin(admin);
         init_and_mint_coin(user1);
 
@@ -69,11 +70,11 @@ module account::protocol_test {
         utils::init_module_for_tests(admin);
     }
 
-    #[test(admin = @account, user1 = @0x1001, aptos_framework = @aptos_framework)]
+    #[test(admin = @account, user1 = @0x1001, coin_signer = @coin_addr, aptos_framework = @aptos_framework)]
     public fun test_supply(
-        admin: &signer, user1: &signer, aptos_framework: &signer
+        admin: &signer, user1: &signer, coin_signer: &signer, aptos_framework: &signer
     ) {
-        test_init(admin, user1, aptos_framework);
+        test_init(admin, user1, coin_signer, aptos_framework);
 
         let user1_balance = user_lens::get_balance<USDT>(signer::address_of(user1));
         assert!(user1_balance == 10000000000000, ERR_TEST);
@@ -87,7 +88,7 @@ module account::protocol_test {
             user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
-        let total_supply = user_lens::get_total_supply<USDT>(signer::address_of(user1));
+        let total_supply = user_lens::get_user_supply<USDT>(signer::address_of(user1));
         assert!(total_supply == 1000000, ERR_TEST);
 
         let user1_supply_positions = user_lens::get_supply_positions(signer::address_of(user1));
@@ -108,6 +109,7 @@ module account::protocol_test {
             user2 = @0x1002,
             user3 = @0x1003,
             user4 = @0x1004,
+            coin_signer = @coin_addr,
             aptos_framework = @aptos_framework
         )
     ]
@@ -117,9 +119,10 @@ module account::protocol_test {
         user2: &signer,
         user3: &signer,
         user4: &signer,
+        coin_signer: &signer,
         aptos_framework: &signer
     ) {
-        test_init(admin, user1, aptos_framework);
+        test_init(admin, user1, coin_signer, aptos_framework);
 
         // user1 supply to pool
         entry_positions_manager::supply<USDT>(
@@ -162,7 +165,7 @@ module account::protocol_test {
         // entry_positions_manager::borrow<USDT>(user4, 200000000000, 100, ECHELON_MARKET);
         // (p2ps, p2pb, p2psa, p2pba) = storage::get_delta<USDT>();
 
-        let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user4));
+        let total_borrow = user_lens::get_user_borrow<USDT>(signer::address_of(user4));
         // print(&total_borrow);
         assert!(total_borrow == 508472000000, ERR_TEST);
 
@@ -190,6 +193,12 @@ module account::protocol_test {
 
         let p2p_apy = user_lens::get_user_p2p_apy<WBTC>(ECHELON_MARKET);
         assert!(p2p_apy == 76000000000000000, ERR_TEST);
+
+        let total_supply = market_lens::get_total_supply();
+        // print(&total_supply);
+        
+        let total_borrow = market_lens::get_total_borrow();
+        // print(&total_borrow);
     }
 
     #[
@@ -199,6 +208,7 @@ module account::protocol_test {
             user2 = @0x1002,
             user3 = @0x1003,
             user4 = @0x1004,
+            coin_signer = @coin_addr,
             aptos_framework = @aptos_framework
         )
     ]
@@ -208,9 +218,10 @@ module account::protocol_test {
         user2: &signer,
         user3: &signer,
         user4: &signer,
+        coin_signer: &signer,
         aptos_framework: &signer
     ) {
-        test_init(admin, user1, aptos_framework);
+        test_init(admin, user1, coin_signer, aptos_framework);
         init_and_mint_coin(user2);
         init_and_mint_coin(user3);
         init_and_mint_coin(user4);
@@ -246,6 +257,7 @@ module account::protocol_test {
             user2 = @0x1002,
             user3 = @0x1003,
             user4 = @0x1004,
+            coin_signer = @coin_addr,
             aptos_framework = @aptos_framework
         )
     ]
@@ -255,16 +267,17 @@ module account::protocol_test {
         user2: &signer,
         user3: &signer,
         user4: &signer,
+        coin_signer: &signer,
         aptos_framework: &signer
     ) {
-        test_init(admin, user1, aptos_framework);
+        test_init(admin, user1, coin_signer, aptos_framework);
         init_and_mint_coin(user2);
         init_and_mint_coin(user3);
         init_and_mint_coin(user4);
     
         // user1 supply to pool
-        entry_positions_manager::supply<USDT>(
-            user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
+        entry_positions_manager::supply<APT>(
+            user1, signer::address_of(user1), 12345, 100, ECHELON_MARKET
         );
 
         entry_positions_manager::supply<USDT>(
@@ -279,14 +292,14 @@ module account::protocol_test {
             user3, 8000000, 100, ECHELON_MARKET
         );
 
-        exit_positions_manager::withdraw<USDT>(
-            user1, 500000, signer::address_of(user1), 100, ECHELON_MARKET
+        exit_positions_manager::withdraw<APT>(
+            user1, 12345, signer::address_of(user1), 100, ECHELON_MARKET
         );
 
-        let total_supply = user_lens::get_total_supply<USDT>(signer::address_of(user1));
-        assert!(total_supply == 1000000 - 500000, ERR_TEST);
+        let total_supply = user_lens::get_user_supply<USDT>(signer::address_of(user1));
+        assert!(total_supply == 0, ERR_TEST);
         let user1_balance = std::coin::balance<USDT>(signer::address_of(user1));
-        assert!(user1_balance == 9999999500000, ERR_TEST);
+        assert!(user1_balance == 10000000000000, ERR_TEST);
 
     }
     #[
@@ -296,6 +309,7 @@ module account::protocol_test {
             user2 = @0x1002,
             user3 = @0x1003,
             user4 = @0x1004,
+            coin_signer = @coin_addr,
             aptos_framework = @aptos_framework
         )
     ]
@@ -305,9 +319,10 @@ module account::protocol_test {
         user2: &signer,
         user3: &signer,
         user4: &signer,
+        coin_signer: &signer,
         aptos_framework: &signer
     ) {
-        test_init(admin, user1, aptos_framework);
+        test_init(admin, user1, coin_signer, aptos_framework);
         init_and_mint_coin(user2);
         init_and_mint_coin(user3);
         init_and_mint_coin(user4);
@@ -333,7 +348,7 @@ module account::protocol_test {
             user3, signer::address_of(user3), 5000000, 100, ECHELON_MARKET
         );
 
-        let total_borrow = user_lens::get_total_borrow<USDT>(signer::address_of(user3));
+        let total_borrow = user_lens::get_user_borrow<USDT>(signer::address_of(user3));
         assert!(total_borrow == 8000000 - 5000000, ERR_TEST);   
         
         let user3_balance = std::coin::balance<USDT>(signer::address_of(user3));

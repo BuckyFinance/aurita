@@ -4,7 +4,7 @@ module account::user_lens {
     use account::math;
     use account::mock_aries;
     use account::mock_echelon;
-    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use coin_addr::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     use aptos_framework::coin;
     use std::vector;
     use std::debug::print;
@@ -45,12 +45,12 @@ module account::user_lens {
     }
 
     #[view]
-    public fun get_total_supply<CoinType>(sender_addr: address): u256 {
+    public fun get_user_supply<CoinType>(sender_addr: address): u256 {
         utils::get_user_supply_balance<CoinType>(sender_addr)
     }
 
     #[view]
-    public fun get_total_borrow<CoinType>(sender_addr: address): u256 {
+    public fun get_user_borrow<CoinType>(sender_addr: address): u256 {
         utils::get_user_borrow_balance<CoinType>(sender_addr)
     }
 

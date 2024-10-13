@@ -2,6 +2,7 @@ module account::market_lens {
     use account::mock_aries;
     use account::mock_echelon;
     use account::utils;
+    use account::storage;
 
     #[view]
     public fun get_market_liquidity<CoinType>(market_id: u64): u256 {
@@ -37,5 +38,15 @@ module account::market_lens {
     #[view]
     public fun get_asset_price<CoinType>(): u256 {
         utils::get_asset_price<CoinType>()
+    }
+
+    #[view]
+    public fun get_total_supply(): u256 {
+        storage::get_total_supply()
+    }
+
+    #[view]
+    public fun get_total_borrow(): u256 {
+        storage::get_total_borrow()
     }
 }

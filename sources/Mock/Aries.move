@@ -6,7 +6,7 @@ module account::mock_aries {
     use aptos_framework::coin::{Self, Coin};
     use std::simple_map::{Self, SimpleMap};
     use aptos_std::type_info::{TypeInfo, type_of};
-    use account::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
+    use coin_addr::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
 
     const ERR: u64 = 1000;
     const BASE_12: u256 = 1000000000000;

@@ -17,8 +17,10 @@ import { Network } from "aptos";
 
 const aptosConfig = new AptosConfig({network: Network.TESTNET});
 export const aptos = new Aptos(aptosConfig);
-export const moduleAriesMarket = "0xb68376898967db02a138fc4e28d753da9ae938a83941acb5985b1c654222cdd9";
-export const moduleEchelonMarket = "0x0d498a73af812e151c964716494c2cb560b77081b7ab9a6cb7480a1eae5afad5";
+export const moduleAriesMarket = "0xf55e848e77a859764141c59d9c72664bd8e4adc048f6fc0e73df885a89ef2576";
+export const moduleEchelonMarket = "0x58e4568f9411d6137bdcdf4663f4b107ea4157813fadeb2b1e14492c917d59c0";
+
+
 function App() {
 	const { address, isConnected } = useAccount();
 	const { connect } = useConnect({

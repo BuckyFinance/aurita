@@ -13,7 +13,7 @@ module account::exit_positions_manager {
         sender: &signer,
         amount: u256,
         receiver: address,
-        max_iterations_for_matching: u256,
+        max_iterations_for_matching: u256, 
         market_id: u64
     ) {
         let sender_addr = signer::address_of(sender);
@@ -72,7 +72,7 @@ module account::exit_positions_manager {
                     remaining_to_withdraw
                 );
             remaining_to_withdraw = remaining_to_withdraw - to_withdraw;
-            supplier_balance_on_pool = supplier_balance_in_p2p
+            supplier_balance_on_pool = supplier_balance_on_pool
                 - math::min(
                     on_pool_supply,
                     math::ray_div(to_withdraw, pool_supply_index)
@@ -180,6 +180,8 @@ module account::exit_positions_manager {
             p2p_supply_amount,
             p2p_borrow_amount
         );
+        let price = utils::get_asset_price<CoinType>();
+        storage::subtract_total_supply(amount, price);
 
         coin::deposit<CoinType>(signer::address_of(sender), total_coin);
 
@@ -330,6 +332,9 @@ module account::exit_positions_manager {
             p2p_supply_amount,
             p2p_borrow_amount
         );
+
+        let price = utils::get_asset_price<CoinType>();
+        storage::subtract_total_borrow(amount, price);
     }
 
     // ============================== Helper Function =================================
