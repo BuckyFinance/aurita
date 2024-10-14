@@ -182,7 +182,6 @@ module account::exit_positions_manager {
         );
         let price = utils::get_asset_price<CoinType>();
         storage::subtract_total_supply(amount, price);
-
         coin::deposit<CoinType>(signer::address_of(sender), total_coin);
 
     }

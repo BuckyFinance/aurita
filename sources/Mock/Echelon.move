@@ -9,6 +9,7 @@ module account::mock_echelon {
     
 
     const ERR: u64 = 1000;
+    const BASE_6: u64 = 1000000;
     const BASE_12: u256 = 1000000000000;
     const INITIAL_COIN: u256 = 1000000000000000000; // 10^12
 
@@ -74,13 +75,13 @@ module account::mock_echelon {
         aurita_coin::mint<WETH>(sender, (INITIAL_COIN as u64));
         aurita_coin::mint<CAKE>(sender, (INITIAL_COIN as u64));
 
-        deposit<USDT>(sender, INITIAL_COIN);
-        deposit<USDC>(sender, INITIAL_COIN);
-        deposit<WBTC>(sender, INITIAL_COIN);
-        deposit<STAPT>(sender, INITIAL_COIN);
-        deposit<APT>(sender, INITIAL_COIN);
-        deposit<WETH>(sender, INITIAL_COIN);
-        deposit<CAKE>(sender, INITIAL_COIN);
+        deposit<USDT>(sender, 24045400000000);
+        deposit<USDC>(sender, 108067400000000);
+        deposit<WBTC>(sender, 7900000000);
+        deposit<STAPT>(sender, 1225200000000);
+        deposit<APT>(sender, 2380600000000);
+        deposit<WETH>(sender, 22093600000);
+        deposit<CAKE>(sender, 1593500000000);
     }
     
     public fun create_usdt_market<CoinType>() acquires MarketRecord {
