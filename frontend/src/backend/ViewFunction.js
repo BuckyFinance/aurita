@@ -320,7 +320,7 @@ export async function getMarketLiquidity(coinSymbol, market_id) {
 
 export async function getAssetPrice(coinSymbol) {
 
-    const coin = `${moduleAriesMarket}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
 
     const payload = {
         function: `${moduleAriesMarket}::market_lens::get_asset_price`,
@@ -346,7 +346,7 @@ export async function getTotalSupply(market_id) {
         moduleAddress = moduleEchelonMarket;
     }
     const payload = {
-        function: `${moduleAriesMarket}::market_lens::get_total_supply`,
+        function: `${moduleAddress}::market_lens::get_total_supply`,
         functionArguments: [],
     };
 
@@ -369,7 +369,7 @@ export async function getTotalBorrow(market_id) {
     }
 
     const payload = {
-        function: `${moduleAriesMarket}::market_lens::get_total_borrow`,
+        function: `${moduleAddress}::market_lens::get_total_borrow`,
         functionArguments: [],
     };
 

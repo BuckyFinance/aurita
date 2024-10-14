@@ -10,7 +10,7 @@ const ShiningText = ({ text, isSelected }) => {
       const newStars = [];
 
       for (let i = 0; i < numStars; i++) {
-        const size = Math.floor(Math.random() * 4) + 10;
+        const size = Math.floor(Math.random() * 3) + 8;
         const top = Math.floor(Math.random() * 80);
         const left = Math.floor(Math.random() * 100);
         const delay = (Math.random() * 5).toFixed(2);

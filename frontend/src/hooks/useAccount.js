@@ -87,11 +87,15 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
                     'amount': data[type][index * 2] / 1e6,
                     'apy': data[type][index * 2 + 1] / 1e18,
                 }
+
+                if(data[type][index * 2] == 0){
+                    delete _data[token];
+                }
             }
 
-            if(type == SUPPLY){
+            if(type == SUPPLY && Object.keys(_data).length){
                 account_data['positions']['supply'] = _data;
-            }else{
+            }else if(Object.keys(_data).length){
                 account_data['positions']['borrow'] = _data;
             }
         }
@@ -111,7 +115,15 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
     }
 
     useEffect(() => {
-        fetchPositionData();
+        fetchPositionData(); // Fetch data immediately when walletAddress or marketId changes
+
+        // Set an interval to fetch data every 10 seconds
+        const interval = setInterval(() => {
+            fetchPositionData();
+        }, 10000); // Fetch every 10 seconds
+
+        // Cleanup the interval when component unmounts or walletAddress/marketId changes
+        return () => clearInterval(interval);
     }, [walletAddress, marketId]);
 
 
