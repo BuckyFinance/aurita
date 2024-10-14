@@ -175,7 +175,7 @@ function Dashboard(props){
                                     </TableCell>
                                     <TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{data.amount}</TableCell>
                                     <TableCell style={{borderTopRightRadius: '10px',
-                                        borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{data.apy}%</TableCell>
+                                        borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{(data.apy * 100).toFixed(2)}%</TableCell>
                                 </TableRow>
                             ))(tokenList.filter(token => token.ticker == collateral)[0]))}
                             </TableBody>
@@ -235,7 +235,7 @@ function Dashboard(props){
                                     </TableCell>
                                     <TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{data.amount}</TableCell>
                                     <TableCell style={{borderTopRightRadius: '10px',
-                                        borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{data.apy}%</TableCell>
+                                        borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{(data.apy * 100).toFixed(2)}%</TableCell>
                                 </TableRow>
                             ))(tokenList.filter(token => token.ticker == collateral)[0]))}
                             </TableBody>

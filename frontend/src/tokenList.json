@@ -22,14 +22,14 @@
     },
     {
         "ticker": "APT",
-        "img": "https://cdn.moralis.io/eth/0x514910771af9ca656af840dff83e8264ecf986ca.png",
+        "img": "https://marisaoj.com/media/media/OAmPZGrNXrMDUx0Dau6Low.svg",
         "name": "Aptos",
         "address": "0x514910771af9ca656af840dff83e8264ecf986ca",
         "decimals": 18
     },
     {
         "ticker": "STAPT",
-        "img": "https://cdn.moralis.io/eth/0x056fd409e1d7a124bd7017459dfea2f387b6d5cd.png",
+        "img": "https://marisaoj.com/media/media/OAmPZGrNXrMDUx0Dau6Low.svg",
         "name": "Staked Aptos",
         "address": "0x056Fd409E1d7A124BD7017459dFEa2F387b6d5Cd",
         "decimals": 2
@@ -43,8 +43,8 @@
     },
     {
         "ticker": "CAKE",
-        "img": "https://cdn.moralis.io/eth/0x6b175474e89094c44da98b954eedeac495271d0f.png",
-        "name": "Dai Stablecoin",
+        "img": "https://cryptologos.cc/logos/pancakeswap-cake-logo.svg?v=035",
+        "name": "Pancake Swap",
         "address": "0x6b175474e89094c44da98b954eedeac495271d0f",
         "decimals": 18
     }

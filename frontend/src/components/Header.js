@@ -16,19 +16,19 @@ function Header(props) {
 
   	const {address, isConnected, connect} = props;
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [market, setMarket] = useState({
-		"market": "Aries",
-		"img": Aries
-	});
-	
+	const market = props.market;
+	const setMarket = props.setMarket;
+
 	const marketList = [
 		{
 			"market": "Aries",
-			"img": Aries
+			"img": Aries,
+			"id": 0,
 		}, 
 		{
 			"market": "Echelon",
-			"img": Echelon
+			"img": Echelon,
+			"id": 1,
 		}
 	];
 
