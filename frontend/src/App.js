@@ -17,8 +17,8 @@ import { Network } from "aptos";
 
 const aptosConfig = new AptosConfig({network: Network.TESTNET});
 export const aptos = new Aptos(aptosConfig);
-export const moduleAriesMarket = "0xfff0577ddbeec8d5148df0f44d39bd9ce773812007d2b8a6f344143b5ccda685";
-export const moduleEchelonMarket = "0x5342ae3c9038d7a22ac7b88fbc245fb81198efe6361de64e5c82114b8f71fc8a";
+export const moduleAriesMarket = "0x13a95507bbb7f53a3d0409971a6188285cc56a8d99877e1ea29ad88acc442da8";
+export const moduleEchelonMarket = "0xe067195ef0b7bea0dceac76abe2e594859f93eb6f1ce44f2bdc156687f350b23";
 export const moduleAuritaCoin = "0xc216e8072f3d64c67324680b229f1c5ade5eaa173e9412f580f804067aa4be8b";
 
 
