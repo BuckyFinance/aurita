@@ -1,6 +1,7 @@
 module account::exit_positions_manager {
     use std::signer;
     use std::debug::print;
+    use std::string;
     use account::utils;
     use account::math;
     use account::storage;
@@ -79,7 +80,11 @@ module account::exit_positions_manager {
                 );
             if (remaining_to_withdraw == 0) {
                 matching_engine::update_supplier_in_DS<CoinType>(sender_addr);
-
+                let price = utils::get_asset_price<CoinType>();
+                storage::subtract_total_supply(to_withdraw, price);
+                storage::update_supply_record<CoinType>(
+                    sender_addr, supplier_balance_in_p2p, supplier_balance_on_pool
+                );
                 // withdraw from pool
                 let coin = pos_utils::withdraw<CoinType>(sender, to_withdraw, market_id);
                 coin::deposit<CoinType>(signer::address_of(sender), coin);
@@ -214,8 +219,12 @@ module account::exit_positions_manager {
                     borrower_balance_on_pool,
                     math::ray_div(to_repay, pool_borrow_index)
                 );
-
             if (remaining_to_repay == 0) {
+                storage::update_borrow_record<CoinType>(
+                    sender_addr, borrower_balance_in_p2p, borrower_balance_on_pool
+                );
+                let price = utils::get_asset_price<CoinType>();
+                storage::subtract_total_borrow(to_repay, price);
                 matching_engine::update_borrower_in_DS<CoinType>(on_behalf);
                 pos_utils::repay<CoinType>(sender, to_repay, market_id);
                 return;
@@ -230,7 +239,6 @@ module account::exit_positions_manager {
                 borrower_balance_in_p2p,
                 math::ray_div(remaining_to_repay, p2p_borrow_index)
             );
-
         storage::update_borrow_record<CoinType>(
             sender_addr, borrower_balance_in_p2p, borrower_balance_on_pool
         );

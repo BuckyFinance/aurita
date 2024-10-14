@@ -340,18 +340,30 @@ module account::protocol_test {
             user3, signer::address_of(user3), 10000000, 100, ECHELON_MARKET
         );
 
-        entry_positions_manager::borrow<USDT>(
-            user3, 8000000, 100, ECHELON_MARKET
+        entry_positions_manager::supply<WBTC>(
+            user4, signer::address_of(user4), 1000000, 100, ECHELON_MARKET
         );
+
+        entry_positions_manager::borrow<USDT>(
+            user4, 10000000000, 100, ECHELON_MARKET
+        );
+
+        let market_total_borrowed = market_lens::get_total_borrow();
+        // print(&market_total_borrowed);
 
         exit_positions_manager::repay<USDT>(
-            user3, signer::address_of(user3), 5000000, 100, ECHELON_MARKET
+            user4, signer::address_of(user4), 5000000000, 100, ECHELON_MARKET
         );
 
-        let total_borrow = user_lens::get_user_borrow<USDT>(signer::address_of(user3));
-        assert!(total_borrow == 8000000 - 5000000, ERR_TEST);   
+        let market_total_borrowed = market_lens::get_total_borrow();
+        // print(&market_total_borrowed);
+
+        let total_borrow = user_lens::get_user_borrow<USDT>(signer::address_of(user4));
+        // print(&total_borrow);
+        assert!(total_borrow == 10000000000 - 5000000000, ERR_TEST);   
         
-        let user3_balance = std::coin::balance<USDT>(signer::address_of(user3));
-        assert!(user3_balance == 10000003000000, ERR_TEST);
+        let user4_balance = std::coin::balance<USDT>(signer::address_of(user4));
+        // print(&user4_balance);
+        assert!(user4_balance == 10000000000000 + 5000000000, ERR_TEST);
     }
 }
