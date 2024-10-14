@@ -5,6 +5,7 @@ const aptosConfig = new AptosConfig({ network: Network.TESTNET});
 export const aptos = new Aptos(aptosConfig);
 export const moduleAriesMarket = "0xf55e848e77a859764141c59d9c72664bd8e4adc048f6fc0e73df885a89ef2576";
 export const moduleEchelonMarket = "0x58e4568f9411d6137bdcdf4663f4b107ea4157813fadeb2b1e14492c917d59c0";
+export const moduleAuritaCoin = "0xc216e8072f3d64c67324680b229f1c5ade5eaa173e9412f580f804067aa4be8b";
 //===================================================================================
 //================================== User Lens ======================================
 //===================================================================================
@@ -67,7 +68,7 @@ export async function getUserSupplyAmount(coinSymbol, userAddress, market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
 
     const payload = {
         function: `${moduleAddress}::user_lens::get_user_supply`,
@@ -92,7 +93,7 @@ export async function getUserBorrowAmount(coinSymbol, userAddress, market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
 
     const payload = {
         function: `${moduleAddress}::user_lens::get_user_borrow`,
@@ -165,7 +166,7 @@ export async function getUserSupplyAPY(coinSymbol, market_id) {
         moduleAddress = moduleEchelonMarket;
     }
 
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
 
     const payload = {
         function: `${moduleAddress}::user_lens::get_user_p2p_apy`,
@@ -191,7 +192,7 @@ export async function getUserBorrowAPY(coinSymbol, market_id) {
         moduleAddress = moduleEchelonMarket;
     }
 
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
 
     const payload = {
         function: `${moduleAddress}::user_lens::get_user_p2p_apy`,
@@ -216,7 +217,7 @@ export async function getUserBalance(userAddress, coinSymbol, market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const payload = {
         function: `${moduleAddress}::user_lens::get_balance`,
         typeArguments: [coin],
@@ -246,7 +247,7 @@ export async function getMarketDepositAPY(coinSymbol, market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const payload = {
         function: `${moduleAddress}::market_lens::get_deposit_apy`,
         typeArguments: [coin],
@@ -273,7 +274,7 @@ export async function getBorrowAPY(coinSymbol, market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
 
     const payload = {
         function: `${moduleAddress}::market_lens::get_borrow_apy`,
@@ -298,7 +299,7 @@ export async function getMarketLiquidity(coinSymbol, market_id) {
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
 
     const payload = {
         function: `${moduleAddress}::market_lens::get_market_liquidity`,

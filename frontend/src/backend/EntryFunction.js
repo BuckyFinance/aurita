@@ -1,6 +1,7 @@
 import { aptos } from "../App.js";
 import { moduleAriesMarket } from "../App.js";
 import { moduleEchelonMarket } from "../App.js";
+import { moduleAuritaCoin } from "../App.js";
 
 export async function mintCoin(coinSymbol, userAddress, amount, market_id, signAndSubmitTransaction) {
     let moduleAddress;
@@ -9,12 +10,12 @@ export async function mintCoin(coinSymbol, userAddress, amount, market_id, signA
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
 
     const payload = {
         data: {
-            function: `${moduleAddress}::aurita_coin::mint`,
+            function: `${moduleAuritaCoin}::aurita_coin::mint`,
             typeArguments: [coin],
             functionArguments: [amount_in_wei],
         }
@@ -41,7 +42,7 @@ export async function supply(coinSymbol, userAddress, amount, market_id, signAnd
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const onBehalfAddress = userAddress;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
@@ -71,7 +72,7 @@ export async function borrow(coinSymbol, amount, market_id, signAndSubmitTransac
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
 
@@ -100,7 +101,7 @@ export async function withdraw(coinSymbol, userAddress, amount, market_id, signA
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
     const receiver = userAddress;
@@ -130,7 +131,7 @@ export async function repay(coinSymbol, userAddress, amount, market_id, signAndS
     } else {
         moduleAddress = moduleEchelonMarket;
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const iterations = 100;
     const amount_in_wei = amount * 1000000;
     const onBehalfAddress = userAddress;
@@ -163,7 +164,7 @@ export async function migrate(coinSymbol, amount, market_id, signAndSubmitTransa
         moduleAddress = moduleEchelonMarket;
         func = `${moduleAddress}::migrate::migrate_echelon`
     }
-    const coin = `${moduleAddress}::aurita_coin::${coinSymbol}`;
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
 
     const payload = {
