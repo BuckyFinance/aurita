@@ -212,6 +212,9 @@ module account::entry_positions_manager {
         matching_engine::update_borrower_in_DS<CoinType>(user_addr);
 
         // transfer token to user
+        if(coin::is_account_registered<CoinType>(signer::address_of(user)) == false) {
+            coin::register<CoinType>(user);
+        };
         coin::deposit(user_addr, withdraw_coin);
     }
 
