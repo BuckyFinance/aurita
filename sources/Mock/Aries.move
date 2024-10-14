@@ -9,6 +9,7 @@ module account::mock_aries {
     use coin_addr::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
 
     const ERR: u64 = 1000;
+    const BASE_6: u64 = 1000000;
     const BASE_12: u256 = 1000000000000;
     const INITIAL_COIN: u256 = 1000000000000000000; // 10^12
 
@@ -65,13 +66,13 @@ module account::mock_aries {
         aurita_coin::mint<WETH>(sender, (INITIAL_COIN as u64));
         aurita_coin::mint<CAKE>(sender, (INITIAL_COIN as u64));
 
-        deposit<USDT>(sender, INITIAL_COIN);
-        deposit<USDC>(sender, INITIAL_COIN);
-        deposit<WBTC>(sender, INITIAL_COIN);
-        deposit<STAPT>(sender, INITIAL_COIN);
-        deposit<APT>(sender, INITIAL_COIN);
-        deposit<WETH>(sender, INITIAL_COIN);
-        deposit<CAKE>(sender, INITIAL_COIN);
+        deposit<USDT>(sender, 187845757620000);
+        deposit<USDC>(sender, 193859095050000);
+        deposit<WBTC>(sender, 10700000000);
+        deposit<STAPT>(sender, 11023373230000);
+        deposit<APT>(sender, 7054616740000);
+        deposit<WETH>(sender, 606700000);
+        deposit<CAKE>(sender, 2202510840000);
     }
 
     public fun admin_add_pool<CoinType>(sender: &signer) {
