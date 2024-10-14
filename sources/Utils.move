@@ -77,21 +77,20 @@ module account::utils {
         };
 
         if (coin_type == type_of<STAPT>()) {
-            asset_price == 8640000 * BASE_12;
+            asset_price = 8640000 * BASE_12;
         };
 
         if (coin_type == type_of<APT>()) {
-            asset_price == 7940000 * BASE_12;
+            asset_price = 7940000 * BASE_12;
         };
 
         if(coin_type == type_of<WETH>()) {
-            asset_price == 2626000000 * BASE_12;
+            asset_price = 2626000000 * BASE_12;
         };
 
         if(coin_type == type_of<CAKE>()) {
-            asset_price == 2050000 * BASE_12;
+            asset_price = 2050000 * BASE_12;
         };
-
         asset_price
     }
 
