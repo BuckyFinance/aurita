@@ -135,6 +135,25 @@ module account::user_lens {
         coin::balance<CoinType>(sender_addr)
     }
 
+    #[view]
+    public fun get_coin_deposit(sender_addr: address, market_id: u64): vector<String> {
+        if(market_id == 0) {
+            mock_aries::get_coin_deposit(sender_addr)
+        } else {
+            mock_echelon::get_coin_deposit(sender_addr)
+        }
+    }
+
+    #[view]
+    public fun get_amount_deposit(sender_addr: address, market_id: u64): vector<u256> {
+        if(market_id == 0) {
+            mock_aries::get_amount_deposit(sender_addr)
+        } else {
+            mock_echelon::get_amount_deposit(sender_addr)
+        }
+    }
+
+
     fun get_user_supply_balance(sender_addr: address, coin_type: TypeInfo): u256 {
         if(coin_type == type_of<USDC>()) {
             utils::get_user_supply_balance<USDC>(sender_addr)

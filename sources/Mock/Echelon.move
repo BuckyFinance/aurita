@@ -4,7 +4,7 @@ module account::mock_echelon {
     use std::vector;
     use aptos_framework::coin::{Self, Coin};
     use std::simple_map::{Self, SimpleMap};
-    use aptos_std::type_info::{TypeInfo, type_of};
+    use aptos_std::type_info::{Self, TypeInfo, type_of};
     use coin_addr::aurita_coin::{Self, USDC, USDT, WBTC, STAPT, APT, WETH, CAKE};
     
 
@@ -23,6 +23,15 @@ module account::mock_echelon {
         borrow_apy: u256
     }
 
+    struct SupplyPosition has key, store , drop{
+        supply_list: vector<TypeInfo>,
+        supply_map: SimpleMap<TypeInfo, u256>
+    }
+
+    struct PositionRecord has key {
+        supply_record: SimpleMap<address, SupplyPosition>
+    }
+
     struct MarketRecord has key {
         market_list: vector<TypeInfo>,
         market_map: SimpleMap<TypeInfo, Market>
@@ -36,6 +45,14 @@ module account::mock_echelon {
                 market_map: simple_map::create()
             }
         );
+
+        move_to(
+            sender,
+            PositionRecord {
+                supply_record: simple_map::create()
+            }
+        );
+        
         admin_add_pool<USDT>(sender);
         admin_add_pool<USDC>(sender);
         admin_add_pool<WBTC>(sender);
@@ -58,7 +75,7 @@ module account::mock_echelon {
         );
     }
 
-    public entry fun initialize_market(sender: &signer) acquires MarketRecord, MarketReserve{
+    public entry fun initialize_market(sender: &signer) acquires MarketRecord, MarketReserve, PositionRecord {
         create_usdt_market<USDT>();
         create_usdc_market<USDC>();
         create_wbtc_market<WBTC>();
@@ -119,12 +136,42 @@ module account::mock_echelon {
         create_market(coin_type, 16900 * BASE_12, 52400 * BASE_12);
     }
 
-    public fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
+    public entry fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve, PositionRecord {
         let sender_addr = signer::address_of(sender);
+        let supply_record = &mut borrow_global_mut<PositionRecord>(@account).supply_record;
         let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
         let coin_type = type_of<CoinType>();
         let market = simple_map::borrow_mut<TypeInfo, Market>(market_map, &coin_type);
         market.total_deposit = market.total_deposit + amount;
+
+        // store supply position
+        if (!simple_map::contains_key(supply_record, &sender_addr)) {
+            let supply_list = vector::empty<TypeInfo>();
+            vector::push_back(&mut supply_list, coin_type);
+
+            let supply_map = simple_map::create<TypeInfo, u256>();
+            simple_map::add(&mut supply_map, coin_type, amount);
+
+            let supply_position = SupplyPosition {
+                supply_list,
+                supply_map
+            };
+
+            simple_map::add(supply_record, sender_addr, supply_position);
+        } else {
+            let supply_position = simple_map::borrow_mut<address, SupplyPosition>(supply_record, &sender_addr);
+
+            let supply_list = &mut supply_position.supply_list;
+            let supply_map = &mut supply_position.supply_map;
+
+            if (!vector::contains(supply_list, &coin_type)) {
+                vector::push_back(supply_list, coin_type);
+                simple_map::add(supply_map, coin_type, amount);
+            } else {
+                let new_amount = simple_map::borrow_mut<TypeInfo, u256>(supply_map, &coin_type);
+                *new_amount = *new_amount + amount;
+            }
+        };
 
         // withdraw from user wallet
         let coin = coin::withdraw<CoinType>(sender, (amount as u64));
@@ -155,7 +202,7 @@ module account::mock_echelon {
         coin
     }
 
-    public fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
+    public fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve, PositionRecord {
         deposit<CoinType>(sender, amount);
     }
 
@@ -217,6 +264,42 @@ module account::mock_echelon {
     public fun get_pool_borrow_index<CoinType>(): u256 {
         let pool_borrow_index = 3000000000000011000;
         pool_borrow_index
+    }
+
+    #[view]
+    public fun get_coin_deposit(sender_addr: address): vector<String>  acquires PositionRecord{
+        let supply_record = &borrow_global<PositionRecord>(@account).supply_record;
+        let supply_position = simple_map::borrow(supply_record, &sender_addr);
+        let supply_list = &supply_position.supply_list;
+        let coin_symbol_list: vector<String> = vector::empty();
+        let supply_numbers = vector::length(supply_list);
+        let i = 0;
+        while(i < supply_numbers) {
+            let coin_type = vector::borrow(supply_list, (i as u64));
+            let coin_symbol = type_info::struct_name(coin_type);
+            let coin_symbol_string = string::utf8(coin_symbol);
+            vector::push_back(&mut coin_symbol_list, coin_symbol_string);
+            i = i + 1;
+        };
+        coin_symbol_list
+    }
+
+    #[view]
+    public fun get_amount_deposit(sender_addr: address): vector<u256>  acquires PositionRecord{
+        let supply_record = &borrow_global<PositionRecord>(@account).supply_record;
+        let supply_position = simple_map::borrow(supply_record, &sender_addr);
+        let supply_list = &supply_position.supply_list;
+        let supply_map = &supply_position.supply_map;
+        let amount_list: vector<u256> = vector::empty();
+        let supply_numbers = vector::length(supply_list);
+        let i = 0;
+        while(i < supply_numbers) {
+            let coin_type = vector::borrow(supply_list, (i as u64));
+            let amount = simple_map::borrow(supply_map, coin_type);
+            vector::push_back(&mut amount_list, *amount);
+            i = i + 1;
+        };
+        amount_list
     }
 
     #[test_only(sender = @account)]
