@@ -51,6 +51,7 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
 
     const fetchPositionData = async() => {
         if(!walletAddress){
+            setAccountData(null);
             return;
         }
         
@@ -108,13 +109,14 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
         tokenList.forEach((token, index) => {
             account_data['balance_by_ticker'][token.ticker] = account_data['balance'][index];
         });
-        console.log(account_data['balance']);
+        
         account_data['borrowable'] = await getUserBorrowable(walletAddress, marketId) / 1e6;
 
         setAccountData(account_data);
     }
 
     useEffect(() => {
+        setAccountData(null);
         fetchPositionData(); // Fetch data immediately when walletAddress or marketId changes
 
         // Set an interval to fetch data every 10 seconds

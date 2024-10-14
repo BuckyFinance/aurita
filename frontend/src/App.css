@@ -909,3 +909,7 @@ header {
   .anticon{
     color: white !important;
   }
+
+  .dashboardBox .anticon {
+    color: rgb(64, 67, 77) !important;
+  }

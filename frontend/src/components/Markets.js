@@ -316,12 +316,20 @@ function Markets(props) {
 					</div>
 					<div className="infoContainer">
 						{selectedTab == 0 &&
-							<Info leftInfo="Max Amount" rightInfo={accountData ? accountData['balance_by_ticker'][token.ticker] : null}/>
+							<Info leftInfo="In Wallet" rightInfo={account && accountData ? parseFloat(accountData['balance_by_ticker'][token.ticker].toFixed(6)) : null}/>
+							// Supply
+						}
+						{selectedTab == 1 &&
+							<Info leftInfo="Supplied" rightInfo={account && accountData && accountData.positions.supply[token.ticker] ? parseFloat(accountData.positions.supply[token.ticker].amount.toFixed(6)) : 0}/>
 							// Supply
 						}
 						{selectedTab == 2 &&
-							<Info leftInfo="Max Amount" rightInfo={accountData && marketData ? (accountData['borrowable'] / marketData[token.ticker].price).toFixed(2) : null}/>
+							<Info leftInfo="Max Borrowable" rightInfo={account && accountData && marketData ? parseFloat((accountData['borrowable'] / marketData[token.ticker].price).toFixed(6)) : null}/>
 							// Borrow
+						}
+						{selectedTab == 3 &&
+							<Info leftInfo="Borrowed" rightInfo={account && accountData && accountData.positions.borrow[token.ticker] ? parseFloat(accountData.positions.borrow[token.ticker].amount.toFixed(6)) : 0}/>
+							// Supply
 						}
 						{(selectedTab <= 1) &&
 						<Info leftInfo="Supply APY" rightInfo={marketData ? marketData[token.ticker].deposit_apy : "-"}/>
@@ -336,6 +344,7 @@ function Markets(props) {
 				</div>
 			</div>
 			}
+
 			{isOpen == false && 
 			<div style={{display: 'flex', flexDirection: 'column'}}>
 				<div style={{width: '80vw'}}>
@@ -378,8 +387,10 @@ function Markets(props) {
 											{token.ticker}
 										</div>
 									</TableCell>
-									<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{marketData && accountData ?
+									<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">{(marketData && accountData) ?
 											<>{accountData['balance'][index]}</> :
+											!account ? <>-</>
+											:
 											<><Skeleton.Input
 											active
 											style={{
@@ -389,7 +400,7 @@ function Markets(props) {
 										} </TableCell>
 									<TableCell style={{borderTopRightRadius: '10px',
 										borderBottomRightRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
-										{marketData && accountData ?
+										{(marketData && (accountData || !account)) ?
 											<>{marketData[token.ticker]['deposit_apy']}%</> :
 											<><Skeleton.Input
 											active
@@ -425,7 +436,7 @@ function Markets(props) {
 										<ShiningText isSelected={true} text={`${marketData[token.ticker]['p2p_apy']}%`}></ShiningText>
 										
 										}
-										{(!marketData || !accountData) && <><Skeleton.Node
+										{(!marketData || (!accountData && account)) && <><Skeleton.Node
 											active
 											style={{
 											margin: -6,
@@ -467,7 +478,7 @@ function Markets(props) {
 								>
 									<TableCell style={{borderTopLeftRadius: '10px',
 										borderBottomLeftRadius: '10px',fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
-											{marketData && accountData ?
+											{marketData && (accountData || !account) ?
 												<>{marketData[token.ticker]['borrow_apy']}%</> :
 												<><Skeleton.Input
 											active
@@ -478,7 +489,7 @@ function Markets(props) {
 											}
 										</TableCell>
 									<TableCell style={{fontFamily: 'Kanit', fontSize: 16, color: 'white'}} align="left">
-										{marketData && accountData ?
+										{marketData && (accountData || !account) ?
 													<>{marketData[token.ticker]['market_liquidity']}</> :
 													<><Skeleton.Input
 											active

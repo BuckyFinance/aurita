@@ -25,6 +25,7 @@ import Spinner from "../media/spinner.svg";
 import { Flex, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Skeleton } from 'antd';
+import Connect from "../media/connect2.svg"
 
 const MemoizedSkeletonNode = React.memo(() => (
     <Skeleton.Node
@@ -78,7 +79,6 @@ function Dashboard(props){
     }
 
     function getHealthFactor(a, b){
-        console.log("AB " , a, b);
         if(true){
             if(b == 0){
                 return setHealthFactor("∞");
@@ -97,8 +97,8 @@ function Dashboard(props){
                 Object.entries(accountData['positions']['supply']).map(([collateral, data]) => {
                     total += marketData[collateral]['price'] * data.amount;
                 });
-                setTotalCollateral(total);
             }
+            setTotalCollateral(total);
 
             let _total = 0;
 
@@ -108,8 +108,8 @@ function Dashboard(props){
                 Object.entries(accountData['positions']['borrow']).map(([collateral, data]) => {
                     _total += marketData[collateral]['price'] * data.amount;
                 });
-                setTotalLoan(_total);
             }
+            setTotalLoan(_total);
 
             getHealthFactor(total, _total);
         }
@@ -130,16 +130,16 @@ function Dashboard(props){
                 {/* <button onClick={() => MintToken()}>MINT</button> */}
             <div className="dashboard">
                 <div className="infoBox">
-                    <DataBox name='Total collateral' loaded={marketData != null} boxContent={`$${formatNumber(totalCollateral)}`}></DataBox>
-                    <DataBox name='Total loan' loaded={marketData != null}  boxContent={`$${formatNumber(totalLoan)}`}></DataBox>
-                    <DataBox name='Health factor' loaded={marketData != null}  boxContent={marketData ? healthFactor  : null}></DataBox>
+                    <DataBox name='Total collateral' loaded={marketData != null || !account} boxContent={account ? `$${formatNumber(totalCollateral)}` : "-"}></DataBox>
+                    <DataBox name='Total loan' loaded={marketData != null || !account}  boxContent={account ? `$${formatNumber(totalLoan)}` : "-"}></DataBox>
+                    <DataBox name='Health factor' loaded={marketData != null || !account}  boxContent={account ? (marketData ? healthFactor  : null) : "-"}></DataBox>
                 </div>
                 <div className="dashboard-container2">
                     <div className="dashboardBox" style={{marginRight: '1em'}}>
                         <div className="boxDescription">
                             Your Collateral
                         </div>
-                        {!accountData && <Flex align="center" gap="middle" style={{flexDirection: 'column', height: '50vh', width: '100%'}}>
+                        {!accountData && account && <Flex align="center" gap="middle" style={{flexDirection: 'column', height: '50vh', width: '100%'}}>
                             <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', height: '50vh', flexDirection: 'column'}}>
                                 <Spin indicator={<LoadingOutlined style={{ fontSize: 96}} spin />} />
                                 <p style={{color: 'rgb(64, 67, 77)', fontWeight: 'bold', fontSize: 'larger'}}>Working on it...</p>
@@ -194,19 +194,43 @@ function Dashboard(props){
                                 </div>
                             </div>  
                         }
+                        {!account && 
+                            <div className="empty">
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                <div>
+                                    <img src={Connect} className='emptyimg' style={{width: '25%', height: '25%'}}></img>
+                                </div>
+                                <div style={{fontSize: "larger"}}>
+                                Please connect wallet!
+                                </div>
+                            </div>
+                        </div>  
+                        }
                     </div>
                     <div className="dashboardBox" style={{marginRight: '1em'}}>
                         <div className="boxDescription">
                             Your Loan
                         </div>
-                        {!accountData && <Flex align="center" gap="middle" style={{flexDirection: 'column', height: '50vh', width: '100%'}}>
+                        {(!accountData && account) && <Flex align="center" gap="middle" style={{flexDirection: 'column', height: '50vh', width: '100%'}}>
                             <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', height: '50vh', flexDirection: 'column'}}>
                                 <Spin indicator={<LoadingOutlined style={{ fontSize: 96}} spin />} />
                                 <p style={{color: 'rgb(64, 67, 77)', fontWeight: 'bold', fontSize: 'larger'}}>Working on it...</p>
                             </div>
                         </Flex>
                         }
-                        {(accountData && accountData['positions']['borrow']) &&  <TableContainer component={Paper}>
+                        {!account && 
+                            <div className="empty">
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                <div>
+                                    <img src={Connect} className='emptyimg' style={{width: '25%', height: '25%'}}></img>
+                                </div>
+                                <div style={{fontSize: "larger"}}>
+                                Please connect wallet!
+                                </div>
+                            </div>
+                        </div>  
+                        }
+                        {(account && accountData && accountData['positions']['borrow']) &&  <TableContainer component={Paper}>
                         <Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
                             <TableHead >
                                 <TableRow >
@@ -243,7 +267,7 @@ function Dashboard(props){
                         </TableContainer>
                         }
                         
-                        {(accountData && !accountData['positions']['borrow']) &&    <div className="empty">
+                        {(account && accountData && !accountData['positions']['borrow']) &&    <div className="empty">
                                 <div style={{display: 'flex', flexDirection: 'column'}}>
                                     <div>
                                         <img src={empty} className='emptyimg' style={{width: '40%', height: '40%'}}></img>

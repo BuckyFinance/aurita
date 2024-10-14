@@ -39,7 +39,6 @@ export const useMarkets = (marketId) => {
         promises = await Promise.all(promises);
         marketData['total_supplied'] = promises[0] / 1e24;
         marketData['total_borrowed'] = promises[1] / 1e24;
-        console.log(marketData['total_supplied']);
 
         setMarketData(marketData);
     }
