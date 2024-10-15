@@ -32,8 +32,8 @@ export const useMarkets = (marketId) => {
         });
         
         promises = [
-             getTotalSupply(marketId),
-             getTotalBorrow(marketId)
+            getTotalSupply(marketId),
+            getTotalBorrow(marketId)
         ];
 
         promises = await Promise.all(promises);

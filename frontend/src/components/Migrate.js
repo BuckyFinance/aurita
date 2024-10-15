@@ -11,6 +11,8 @@ import Echelon from "./../media/echelon.png"
 import { useState, useEffect, useRef} from "react";
 import { Input, Popover, Radio, Modal, message } from "antd";
 import empty from "../media/empty2.svg";
+import {Flex, Spin} from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 
 import { Checkbox, Divider } from 'antd';
 import Table from '@mui/material/Table';
@@ -21,23 +23,45 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import ShiningText from "./ShiningText";
+import { useMarketAction } from "../hooks/useWriteTx";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import Connect from "../media/connect2.svg"
+import Success from "../media/success.svg";
+import Failed from "../media/failed.svg";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Migrate(){
-
+function Migrate(props){
+    const { account, signAndSubmitTransaction } = useWallet();
     const [isModalOpen, setIsModalOpen] = useState(false);
 	const [market, setMarket] = useState({
-		"market": "Aries",
-		"img": Aries
+        "market": "Aries",
+		"img": Aries,
+        "id": 0
 	});
+    const accountData = props.accountData;
+    const marketData = props.marketData;
+    const [selectedRows, setSelectedRows] = useState([]);
+    const {isPending, isSuccess, isFailed, execute} = useMarketAction(market.id, "Migrate", accountData ?  accountData.migrate.filter((_, index) => selectedRows.includes(index)) : null, 0, account ? account.address : null, signAndSubmitTransaction);
+    const navigate = useNavigate();
+
+    const accountNavigateData = useMemo(() => accountData ? accountData.migrate : 0, []);
+
+
+    useEffect(() => {
+        setSelectedRows([]);
+    }, [accountNavigateData]);
 	
 	const marketList = [
 		{
 			"market": "Aries",
-			"img": Aries
+			"img": Aries,
+            "id": 0,
 		}, 
 		{
 			"market": "Echelon",
-			"img": Echelon
+			"img": Echelon,
+            "id": 1
 		}
 	];
 
@@ -73,7 +97,6 @@ function Migrate(){
         },
     ]
     
-    const [selectedRows, setSelectedRows] = useState([]);
 
 
     const handleRowSelection = (id) => {
@@ -123,6 +146,40 @@ function Migrate(){
         setStars(newStars);
       }, []); // Empty dependency array to run once on mount
     
+      const [messageApi, contextHolder] = message.useMessage();
+
+      const [showTransactionResult, setShowTransactionResult] = useState(false);
+	const [transactionStatus, setTransactionStatus] = useState("successful");
+    useEffect(() => {
+		if(isPending){
+			messageApi.destroy();
+			messageApi.open({
+				type: 'loading',
+				content: 'Transaction is Pending...',
+				duration: 0,
+			})
+		}else{
+			messageApi.destroy();
+			if(isSuccess){
+				// messageApi.open({
+				//   type: 'success',
+				//   content: 'Transaction Successful',
+				//   duration: 1.5,
+				// })
+				setTransactionStatus("successful");
+				setShowTransactionResult(true);
+			}else if(isFailed){
+				// messageApi.open({
+				// 	type: 'error',
+				// 	content: 'Transaction Failed',
+				// 	duration: 1.50,
+				// })
+				setTransactionStatus("failed");
+				setShowTransactionResult(true);
+			}
+		}
+	}, [isPending, isSuccess, isFailed]);
+
     return (
         <>
             <Modal
@@ -153,6 +210,51 @@ function Migrate(){
                 </div>
             </Modal>
 
+            <Modal
+			open={showTransactionResult}
+			footer={null}
+			onCancel={() => setShowTransactionResult(false)}
+			title={["Transaction", transactionStatus].join(' ')}
+			className="appModal"
+			width={400}
+			>
+				<div className="modalContent">
+					<div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '1em'}}>
+						{transactionStatus == "successful" && 
+							<>
+							<img src={Success} width="25%" style={{marginTop: "1em"}}></img>
+							<div style={{fontSize: "larger", fontWeight: 'bold', fontFamily: "Montserrat"}}>
+								Successfully migrated
+							</div>
+							</>
+						}
+
+						{transactionStatus != "successful" && 
+							<>
+								<img src={Failed} width="25%" style={{marginTop: "1em"}}></img>
+								<div style={{fontSize: "larger", fontWeight: 'bold', fontFamily: "Montserrat"}}>
+									Migration failed
+								</div>
+							</>
+						}						
+
+						<div style={{marginTop: "1em"}}>
+							<div style={{display: 'flex', flexDirection: 'row'}}>
+								<div className="generalButton" style={{marginRight: '1em'}} onClick={() => {
+									navigate("/app");
+								}}>
+									Dashboard
+								</div>
+
+								<div className="generalButton" onClick={() => setShowTransactionResult(false)}>
+									Done
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</Modal>
+
             <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '2em', width:'100%'}}>
                 <div style={{fontSize: '3em', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '20px'}} onClick={() => setIsModalOpen(true)}>
                     Migrate from <span>
@@ -167,19 +269,9 @@ function Migrate(){
                 </div>
 
                 <div className="migrateBox">
-                    {/* <div className="empty">
-                        <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-                            <div>
-                                <img src={empty} className='emptyimg' style={{width: '35%', height: '35%'}}></img>
-                            </div>
-                            <div style={{fontSize: 'large'}}>
-                                You have no position on {market.market}
-                            </div>
-                        </div>
-                        
-                    </div> */}
                     <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%', height: '100%', alignItems: 'left'}}>
-                        <Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
+                    {marketData && accountData && accountData.migrate && accountData.migrate.length && 
+                    <Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
                             <TableHead >
                                 <TableRow >
                                     <TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Assets</TableCell>
@@ -190,9 +282,9 @@ function Migrate(){
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                            {tokenList.map((token, index) => (
+                            {accountData.migrate.map((position, index) => (
                                 <TableRow
-                                key={token.name}
+                                key={position.token.name}
                                 sx= {{ 'td': { border: 0 }, 'th': { border: 0 }, '&:hover': {
                                         backgroundColor: '#363e54', 	
                                     }, backgroundColor: '#131724', 
@@ -205,25 +297,61 @@ function Migrate(){
                                         borderBottomLeftRadius: '10px',fontFamily: 'Kanit', fontSize: 16}} component="th" scope="row">
                                         <div style={{borderTopLeftRadius: '10px',
                                                 borderBottomLeftRadius: '10px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '5px'}}>
-                                            <img src={token.img} height={24}></img>
-                                            {token.ticker}
+                                            <img src={position.token.img} height={24}></img>
+                                            {position.token.ticker}
                                         </div>
                                     </TableCell>
-                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">100.00</TableCell>
-                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">100.00%</TableCell>
+                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">{position.amount}</TableCell>
+                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">{marketData[position.token.ticker].deposit_apy}%</TableCell>
                                     <TableCell className={[selectedRows.includes(index) ? "selected-row" : "not-selected"].join(' ')} style={{borderTopRightRadius: '10px',
                                         borderBottomRightRadius: '10px', fontFamily: 'Kanit', fontSize: 16}} align="left">
-                                            <ShiningText isSelected={selectedRows.includes(index) ? true : false} text="100.00%"/>
+                                            <ShiningText isSelected={selectedRows.includes(index) ? true : false} text={[marketData[position.token.ticker].p2p_apy, "%"].join("")}/>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ))
+                            }
                             </TableBody>
                         </Table>
+                        }
+                        
+                        {account && (!accountData || !marketData) &&
+                                 <Flex align="center" gap="middle" style={{flexDirection: 'column', height: '50vh', width: '100%'}}>
+                                    <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', height: '50vh', flexDirection: 'column'}}>
+                                        <Spin indicator={<LoadingOutlined style={{ fontSize: 96}} spin />} />
+                                        <p style={{color: 'rgb(64, 67, 77)', fontWeight: 'bold', fontSize: 'larger'}}>Working on it...</p>
+                                    </div>
+                                </Flex>
+                            }
+                        {!account && <div className="empty">
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                <div>
+                                    <img src={Connect} className='emptyimg' style={{width: '25%', height: '25%'}}></img>
+                                </div>
+                                <div style={{fontSize: "larger"}}>
+                                Please connect wallet!
+                                </div>
+                            </div>
+                        </div>  }
+
+
+                        {marketData && accountData && accountData.migrate && accountData.migrate.length == 0
+
+                            &&   <div className="empty">
+                            <div style={{display: 'flex', flexDirection: 'column'}}>
+                                <div>
+                                    <img src={empty} className='emptyimg' style={{width: '40%', height: '40%'}}></img>
+                                </div>
+                                <div>
+                                You have no position on {market.market}
+                                </div>
+                            </div>
+                        </div>  
+                        }
                     </div>
                 </div>
                 
                 <div style={{width: '20%'}} >
-                    <div className="migrateButton" disabled={selectedRows.length == 0}>
+                    <div className="migrateButton" disabled={selectedRows.length == 0} onClick={() => execute()}>
                         Migrate {selectedRows.length > 0 && (
                             <>
                                 {selectedRows.length} position{selectedRows.length > 1 ? 's' : ''}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { getUserAllBorrowPositions, getUserHealthFactor, getUserBorrowable, getUserAllSupplyPositions, getUserBalance, getUserSupplyAmount, getUserBorrowAmount, getUserSupplyAPY, getUserBorrowAPY } from "../backend/ViewFunction";
+import { getCoinDepositedForMigrate, getAmountDepositedForMigrate, getUserAllBorrowPositions, getUserHealthFactor, getUserBorrowable, getUserAllSupplyPositions, getUserBalance, getUserSupplyAmount, getUserBorrowAmount, getUserSupplyAPY, getUserBorrowAPY } from "../backend/ViewFunction";
+import tokenList from "../tokenList.json";
 
 export const useAccount = (walletAddress, marketId, tokenList) => {
     const [accountData, setAccountData] = useState(null);
@@ -49,6 +50,30 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
         return data;
     }
 
+    const fetchMigrationData = async () => {
+        let data = [];
+        try{
+            let promises = [
+                getCoinDepositedForMigrate(walletAddress, marketId), 
+                getAmountDepositedForMigrate(walletAddress, marketId),
+            ];
+            
+            promises = await Promise.all(promises);
+
+
+            promises[0].forEach((token, index) => {
+                data.push({
+                    "token": tokenList.filter(_token => _token.ticker == token)[0],
+                    "amount": promises[1][index] / 1e6,
+                });
+            });
+        }catch{
+        }
+
+
+        return data;
+    }  
+
     const fetchPositionData = async() => {
         if(!walletAddress){
             setAccountData(null);
@@ -94,7 +119,7 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
                 }
             }
 
-            if(type == SUPPLY && Object.keys(_data).length){
+            if(type == SUPPLY){
                 account_data['positions']['supply'] = _data;
             }else if(Object.keys(_data).length){
                 account_data['positions']['borrow'] = _data;
@@ -111,6 +136,7 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
         });
         
         account_data['borrowable'] = await getUserBorrowable(walletAddress, marketId) / 1e6;
+        account_data['migrate'] = await fetchMigrationData();
 
         setAccountData(account_data);
     }

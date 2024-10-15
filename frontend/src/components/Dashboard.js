@@ -18,14 +18,15 @@ import { useLocation } from "react-router-dom";
 import empty from "../media/empty2.svg";
 import { useWallet, InputTransactionData, InputViewFunctionData } from "@aptos-labs/wallet-adapter-react";
 
-import { mintCoin } from "../backend/EntryFunction";
-import { getBorrowAPY, getMarketDepositAPY, getMarketLiquidity } from "../backend/ViewFunction";
+import { mintCoin, depositToMockLending } from "../backend/EntryFunction";
+import { getAmountDepositedForMigrate, getBorrowAPY, getMarketDepositAPY, getMarketLiquidity } from "../backend/ViewFunction";
 import { getUserAllBorrowPositions, getUserAllSupplyPositions, getUserSupplyAmount } from "../backend/ViewFunction";
 import Spinner from "../media/spinner.svg";
 import { Flex, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 import { Skeleton } from 'antd';
 import Connect from "../media/connect2.svg"
+// import { getAmountDepositedForMigrate } from "../backend/ViewFunction";
 
 const MemoizedSkeletonNode = React.memo(() => (
     <Skeleton.Node
@@ -114,21 +115,24 @@ function Dashboard(props){
             getHealthFactor(total, _total);
         }
     }, [marketData, accountData]);
+
     async function MintToken(){
-        await mintCoin("USDT", account.address, 100000, 0, signAndSubmitTransaction);
+        await mintCoin("USDC", account.address, 12312, 0, signAndSubmitTransaction);
         console.log("MINTED");
     }
 
     async function f(){
-        console.log(props.accountData);
-        console.log(await getUserSupplyAmount("WBTC", account.address, 0) / 1e6);
+        // console.log(props.accountData);
+        // console.log(accountData.migrate);
+        await depositToMockLending("USDT", 333, 0, signAndSubmitTransaction);
     }
 
     
     return (
         <>
-                {/* <button onClick={() => MintToken()}>MINT</button> */}
+                <button onClick={() => f()}>MINT</button>
             <div className="dashboard">
+                {/* {accountData.migrate} */}
                 <div className="infoBox">
                     <DataBox name='Total collateral' loaded={marketData != null || !account} boxContent={account ? `$${formatNumber(totalCollateral)}` : "-"}></DataBox>
                     <DataBox name='Total loan' loaded={marketData != null || !account}  boxContent={account ? `$${formatNumber(totalLoan)}` : "-"}></DataBox>

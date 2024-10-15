@@ -72,7 +72,7 @@ function Aurita(){
                     <Routes>
                         <Route path="/" element={<Dashboard market={market} marketData={marketData} accountData={accountData}/>}></Route>
                         <Route path="/markets" element={<Markets accountData={accountData} market={market} marketData={marketData} />} />
-                        <Route path="/migrate" element={<Migrate market={market}/>} />
+                        <Route path="/migrate" element={<Migrate market={market} accountData={accountData} marketData={marketData} />} />
                     </Routes>
                 </div>
                 </>

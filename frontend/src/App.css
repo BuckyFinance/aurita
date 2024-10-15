@@ -913,3 +913,7 @@ header {
   .dashboardBox .anticon {
     color: rgb(64, 67, 77) !important;
   }
+
+  .migrateBox .anticon{
+    color: rgb(64, 67, 77) !important;
+  }
