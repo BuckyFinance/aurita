@@ -209,9 +209,9 @@ module account::mock_echelon {
         coin
     }
 
-    public fun user_withdraw<CoinType>(
+    public entry fun user_withdraw<CoinType>(
         sender: &signer, amount: u256
-    ): Coin<CoinType> acquires MarketRecord, MarketReserve, PositionRecord {
+    ) acquires MarketRecord, MarketReserve, PositionRecord {
         let sender_addr = signer::address_of(sender);
         let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
         let supply_record = &mut borrow_global_mut<PositionRecord>(@account).supply_record;
@@ -235,7 +235,7 @@ module account::mock_echelon {
         // deposit to user wallet
         let reserve = &mut borrow_global_mut<MarketReserve<CoinType>>(@account).reserve;
         let coin = coin::extract(reserve, (amount as u64));
-        coin
+        coin::deposit(sender_addr, coin);
     }
 
     public fun borrow<CoinType>(

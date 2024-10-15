@@ -186,20 +186,35 @@ export async function depositToMockLending(coinSymbol, amount, market_id, signAn
     }
 }
 
-export async function migrateFrom(coinSymbol, amount, market_id, signAndSubmitTransaction) {
+export async function migrate(coinSymbol, amount, source_market_id, target_market_id, signAndSubmitTransaction) {
     let moduleAddress;
-    let func;
-    if(market_id === 0) {
+    if (source_market_id === 0) {
         moduleAddress = moduleAriesMarket;
-        func = `${moduleAddress}::migrate::migrate_from_aries`
     } else {
         moduleAddress = moduleEchelonMarket;
-        func = `${moduleAddress}::migrate::migrate_from_echelon`
     }
     const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
+    const receiver = userAddress;
 
-    const payload = {
+    const payload1 = {
+        data: {
+            function: `${moduleAddress}::mock_aires::user_withdraw`,
+            typeArguments: [coin],
+            functionArguments: [amount_in_wei, receiver],
+        }
+    };
+
+    let func;
+    if (target_market_id === 0) {
+        func = `${moduleAriesMarket}::migrate::migrate_to_aries`;
+        moduleAddress = moduleAriesMarket;
+    } else {
+        func = `${moduleEchelonMarket}::migrate::migrate_to_echelon`;
+        moduleAddress = moduleEchelonMarket;
+    }
+
+    const payload2 = {
         data: {
             function: func,
             typeArguments: [coin],
@@ -207,15 +222,20 @@ export async function migrateFrom(coinSymbol, amount, market_id, signAndSubmitTr
         }
     };
 
-    let result;
     try {
-        const response = signAndSubmitTransaction(payload);
-        return response;
+        const response1 = await signAndSubmitTransaction(payload1);
+        console.log(response1);
+
+        await response1.waitForConfirmation();
+        const response2 = await signAndSubmitTransaction(payload2);
+        console.log(response2);
+        return response2;
     } catch(error) {
         console.log(error);
         return;
     }
 }
+
 
 export async function migrateTo(coinSymbol, amount, market_id, signAndSubmitTransaction) {
     let moduleAddress;
