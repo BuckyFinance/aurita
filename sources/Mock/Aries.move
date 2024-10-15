@@ -66,7 +66,7 @@ module account::mock_aries {
     // ============================= Entry Function ==================================
     // ===============================================================================
 
-    public entry fun initialize_market(sender: &signer) acquires MarketRecord, MarketReserve, PositionRecord {
+    public entry fun initialize_market(sender: &signer) acquires MarketRecord, MarketReserve {
         create_usdt_market<USDT>();
         create_usdc_market<USDC>();
         create_wbtc_market<WBTC>();
@@ -136,7 +136,20 @@ module account::mock_aries {
         create_market(coin_type, 0 * BASE_12, 1700 * BASE_12);
     }
 
-    public entry fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve, PositionRecord {
+    public fun deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
+        let sender_addr = signer::address_of(sender);
+        let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
+        let coin_type = type_of<CoinType>();
+        let market = simple_map::borrow_mut<TypeInfo, Market>(market_map, &coin_type);
+        market.total_deposit = market.total_deposit + amount;
+
+        // withdraw from user wallet
+        let coin = coin::withdraw<CoinType>(sender, (amount as u64));
+        let reserve = &mut borrow_global_mut<MarketReserve<CoinType>>(@account).reserve;
+        coin::merge(reserve, coin);
+    }
+
+    public entry fun user_deposit<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve, PositionRecord {
         let sender_addr = signer::address_of(sender);
         let supply_record = &mut borrow_global_mut<PositionRecord>(@account).supply_record;
         let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
@@ -182,6 +195,22 @@ module account::mock_aries {
 
     public fun withdraw<CoinType>(
         sender: &signer, amount: u256
+    ): Coin<CoinType> acquires MarketRecord, MarketReserve {
+        let sender_addr = signer::address_of(sender);
+        let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
+        let coin_type = type_of<CoinType>();
+        let market = simple_map::borrow_mut<TypeInfo, Market>(market_map, &coin_type);
+        assert!(market.total_deposit >= amount, ERR);
+        market.total_deposit = market.total_deposit - amount;
+
+        // deposit to user wallet
+        let reserve = &mut borrow_global_mut<MarketReserve<CoinType>>(@account).reserve;
+        let coin = coin::extract(reserve, (amount as u64));
+        coin
+    }
+
+    public fun user_withdraw<CoinType>(
+        sender: &signer, amount: u256
     ): Coin<CoinType> acquires MarketRecord, MarketReserve, PositionRecord {
         let sender_addr = signer::address_of(sender);
         let market_map = &mut borrow_global_mut<MarketRecord>(@account).market_map;
@@ -192,6 +221,7 @@ module account::mock_aries {
         market.total_deposit = market.total_deposit - amount;
 
         // update poistion record storage
+        assert!(simple_map::contains_key<address, SupplyPosition>(supply_record, &sender_addr), ERR);
         let supply_position = simple_map::borrow_mut<address, SupplyPosition>(supply_record, &sender_addr);
         let supply_list = &mut supply_position.supply_list;
         let supply_map = &mut supply_position.supply_map;
@@ -210,12 +240,12 @@ module account::mock_aries {
 
     public fun borrow<CoinType>(
         sender: &signer, amount: u256
-    ): Coin<CoinType> acquires MarketRecord, MarketReserve, PositionRecord {
+    ): Coin<CoinType> acquires MarketRecord, MarketReserve {
         let coin = withdraw<CoinType>(sender, amount);
         coin
     }
 
-    public fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve, PositionRecord {
+    public fun repay<CoinType>(sender: &signer, amount: u256) acquires MarketRecord, MarketReserve {
         deposit<CoinType>(sender, amount);
     }
 
