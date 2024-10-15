@@ -107,6 +107,7 @@ module account::user_lens {
             let coin_type = vector::borrow(&all_positions_created, (i as u64));
             let (collateral, debt) = get_liquidity_data(sender_addr, *coin_type , market_id);
             total_borrowable = total_borrowable + math::wad_mul(collateral, ltv);
+            total_borrowable = total_borrowable - debt;
             // print(&debt);
             i = i + 1;
         };
