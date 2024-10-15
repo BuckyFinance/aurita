@@ -160,10 +160,10 @@ export async function depositToMockLending(coinSymbol, amount, market_id, signAn
     let func;
     if(market_id === 0) {
         moduleAddress = moduleAriesMarket;
-        func = `${moduleAddress}::mock_aries::deposit`
+        func = `${moduleAddress}::mock_aries::user_deposit`
     } else {
         moduleAddress = moduleEchelonMarket;
-        func = `${moduleAddress}::mock_echelon::deposit`
+        func = `${moduleAddress}::mock_echelon::user_deposit`
     }
     const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
