@@ -129,6 +129,9 @@ module account::protocol_test {
             user1, signer::address_of(user1), 1000000, 100, ECHELON_MARKET
         );
 
+        entry_positions_manager::borrow<USDT>(user1, 300000, 100, ECHELON_MARKET);
+
+
         init_and_mint_coin(user2);
         init_and_mint_coin(user3);
         init_and_mint_coin(user4);

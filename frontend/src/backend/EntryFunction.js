@@ -154,15 +154,47 @@ export async function repay(coinSymbol, userAddress, amount, market_id, signAndS
     }
 }
 
+// deposit to Aries or Echelon
+export async function depositToMockLending(coinSymbol, amount, market_id, signAndSubmitTransaction) {
+    let moduleAddress;
+    let func;
+    if(market_id === 0) {
+        moduleAddress = moduleAriesMarket;
+        func = `${moduleAddress}::mock_aries::deposit`
+    } else {
+        moduleAddress = moduleEchelonMarket;
+        func = `${moduleAddress}::mock_echelon::deposit`
+    }
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
+    const amount_in_wei = amount * 1000000;
+
+    const payload = {
+        data: {
+            function: func,
+            typeArguments: [coin],
+            functionArguments: [amount_in_wei],
+        }
+    };
+
+    let result;
+    try {
+        const response = signAndSubmitTransaction(payload);
+        return response;
+    } catch(error) {
+        console.log(error);
+        return;
+    }
+}
+
 export async function migrate(coinSymbol, amount, market_id, signAndSubmitTransaction) {
     let moduleAddress;
     let func;
     if(market_id === 0) {
         moduleAddress = moduleAriesMarket;
-        func = `${moduleAddress}::migrate::migrate_aries`
+        func = `${moduleAddress}::migrate::migrate_from_aries`
     } else {
         moduleAddress = moduleEchelonMarket;
-        func = `${moduleAddress}::migrate::migrate_echelon`
+        func = `${moduleAddress}::migrate::migrate_from_echelon`
     }
     const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
