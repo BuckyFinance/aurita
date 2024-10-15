@@ -186,7 +186,7 @@ export async function depositToMockLending(coinSymbol, amount, market_id, signAn
     }
 }
 
-export async function migrate(coinSymbol, amount, market_id, signAndSubmitTransaction) {
+export async function migrateFrom(coinSymbol, amount, market_id, signAndSubmitTransaction) {
     let moduleAddress;
     let func;
     if(market_id === 0) {
@@ -195,6 +195,37 @@ export async function migrate(coinSymbol, amount, market_id, signAndSubmitTransa
     } else {
         moduleAddress = moduleEchelonMarket;
         func = `${moduleAddress}::migrate::migrate_from_echelon`
+    }
+    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
+    const amount_in_wei = amount * 1000000;
+
+    const payload = {
+        data: {
+            function: func,
+            typeArguments: [coin],
+            functionArguments: [amount_in_wei],
+        }
+    };
+
+    let result;
+    try {
+        const response = signAndSubmitTransaction(payload);
+        return response;
+    } catch(error) {
+        console.log(error);
+        return;
+    }
+}
+
+export async function migrateTo(coinSymbol, amount, market_id, signAndSubmitTransaction) {
+    let moduleAddress;
+    let func;
+    if(market_id === 0) {
+        moduleAddress = moduleAriesMarket;
+        func = `${moduleAddress}::migrate::migrate_to_aries`
+    } else {
+        moduleAddress = moduleEchelonMarket;
+        func = `${moduleAddress}::migrate::migrate_to_echelon`
     }
     const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
