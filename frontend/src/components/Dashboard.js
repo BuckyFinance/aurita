@@ -130,7 +130,7 @@ function Dashboard(props){
     
     return (
         <>
-                <button onClick={() => f()}>MINT</button>
+                {/* <button onClick={() => f()}>MINT</button> */}
             <div className="dashboard">
                 {/* {accountData.migrate} */}
                 <div className="infoBox">
