@@ -123,7 +123,7 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
         // Set an interval to fetch data every 10 seconds
         const interval = setInterval(() => {
             fetchPositionData();
-        }, 10000); // Fetch every 10 seconds
+        }, 3000); // Fetch every 10 seconds
 
         // Cleanup the interval when component unmounts or walletAddress/marketId changes
         return () => clearInterval(interval);
@@ -166,7 +166,7 @@ export const useMigrate = (walletAddress, marketId) => {
         // Set an interval to fetch data every 10 seconds
         const interval = setInterval(() => {
             fetchMigrationData();
-        }, 10000); // Fetch every 10 seconds
+        }, 3000); // Fetch every 10 seconds
 
         // Cleanup the interval when component unmounts or walletAddress/marketId changes
         return () => clearInterval(interval);

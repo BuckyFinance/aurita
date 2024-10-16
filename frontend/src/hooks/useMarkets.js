@@ -50,7 +50,7 @@ export const useMarkets = (marketId) => {
         // Set an interval to fetch data every 5 seconds
         const interval = setInterval(() => {
             fetchMarketData();
-        }, 10000);
+        }, 3000);
 
         // Cleanup the interval when component unmounts or marketId changes
         return () => clearInterval(interval);

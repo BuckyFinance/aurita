@@ -70,6 +70,9 @@ function Dashboard(props){
         if(value == null){
             return "0";
         }
+        if (value >= 1_000_000_000) {
+            return (value / 1_000_000_000).toFixed(2) + 'B';
+        }else
         if (value >= 1_000_000) {
             return (value / 1_000_000).toFixed(2) + 'M';
         } else if (value >= 1_000) {
@@ -117,14 +120,14 @@ function Dashboard(props){
     }, [marketData, accountData]);
 
     async function MintToken(){
-        await mintCoin("USDC", account.address, 12312, 0, signAndSubmitTransaction);
+        await mintCoin("CAKE", account.address, 8737, 0, signAndSubmitTransaction);
         console.log("MINTED");
     }
 
     async function f(){
         // console.log(props.accountData);
         // console.log(accountData.migrate);
-        await depositToMockLending("USDT", 333, 0, signAndSubmitTransaction);
+        await depositToMockLending("WETH", 12, 1, signAndSubmitTransaction);
     }
 
     
