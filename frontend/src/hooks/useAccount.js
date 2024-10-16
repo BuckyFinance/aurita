@@ -50,30 +50,6 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
         return data;
     }
 
-    const fetchMigrationData = async () => {
-        let data = [];
-        try{
-            let promises = [
-                getCoinDepositedForMigrate(walletAddress, marketId), 
-                getAmountDepositedForMigrate(walletAddress, marketId),
-            ];
-            
-            promises = await Promise.all(promises);
-
-
-            promises[0].forEach((token, index) => {
-                data.push({
-                    "token": tokenList.filter(_token => _token.ticker == token)[0],
-                    "amount": promises[1][index] / 1e6,
-                });
-            });
-        }catch{
-        }
-
-
-        return data;
-    }  
-
     const fetchPositionData = async() => {
         if(!walletAddress){
             setAccountData(null);
@@ -136,7 +112,6 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
         });
         
         account_data['borrowable'] = await getUserBorrowable(walletAddress, marketId) / 1e6;
-        account_data['migrate'] = await fetchMigrationData();
 
         setAccountData(account_data);
     }
@@ -156,4 +131,46 @@ export const useAccount = (walletAddress, marketId, tokenList) => {
 
 
     return {accountData};
+}
+
+export const useMigrate = (walletAddress, marketId) => {
+    const [migrateData, setMigrateData] = useState(null);
+
+    const fetchMigrationData = async () => {
+        let data = [];
+        try{
+            let promises = [
+                getCoinDepositedForMigrate(walletAddress, marketId), 
+                getAmountDepositedForMigrate(walletAddress, marketId),
+            ];
+            
+            promises = await Promise.all(promises);
+
+
+            promises[0].forEach((token, index) => {
+                data.push({
+                    "token": tokenList.filter(_token => _token.ticker == token)[0],
+                    "amount": promises[1][index] / 1e6,
+                });
+            });
+        }catch{
+        }
+
+        setMigrateData(data);
+    }  
+
+    useEffect(() => {
+        setMigrateData(null);
+        fetchMigrationData(); // Fetch data immediately when walletAddress or marketId changes
+
+        // Set an interval to fetch data every 10 seconds
+        const interval = setInterval(() => {
+            fetchMigrationData();
+        }, 10000); // Fetch every 10 seconds
+
+        // Cleanup the interval when component unmounts or walletAddress/marketId changes
+        return () => clearInterval(interval);
+    }, [walletAddress, marketId]);
+
+    return {migrateData};
 }

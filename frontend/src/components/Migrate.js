@@ -30,24 +30,29 @@ import Success from "../media/success.svg";
 import Failed from "../media/failed.svg";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMarkets } from "../hooks/useMarkets";
+import { useMigrate } from "../hooks/useAccount";
 
 function Migrate(props){
     const { account, signAndSubmitTransaction } = useWallet();
     const [isModalOpen, setIsModalOpen] = useState(false);
-	const [market, setMarket] = useState({
+	const [marketFrom, setMarketFrom] = useState({
         "market": "Aries",
 		"img": Aries,
         "id": 0
 	});
     const accountData = props.accountData;
     const marketData = props.marketData;
+    const market = props.market;
     const [selectedRows, setSelectedRows] = useState([]);
-    const {isPending, isSuccess, isFailed, execute} = useMarketAction(market.id, "Migrate", accountData ?  accountData.migrate.filter((_, index) => selectedRows.includes(index)) : null, 0, account ? account.address : null, signAndSubmitTransaction);
     const navigate = useNavigate();
-
+    
     const accountNavigateData = useMemo(() => accountData ? accountData.migrate : 0, []);
-
-
+    
+    const {marketData : marketSourceData} = useMarkets(marketFrom.id);
+    const {migrateData} = useMigrate(account ? account.address : null, marketFrom.id);
+    const {isPending, isSuccess, isFailed, execute} = useMarketAction(market.id, "Migrate", migrateData ?  migrateData.filter((_, index) => selectedRows.includes(index)) : null, 0, account ? account.address : null, signAndSubmitTransaction);
+    
     useEffect(() => {
         setSelectedRows([]);
     }, [accountNavigateData]);
@@ -195,7 +200,7 @@ function Migrate(props){
                     <div
                         className="tokenChoice"
                         key={i}
-                        onClick={() => {setMarket(e); setIsModalOpen(false)}}
+                        onClick={() => {setMarketFrom(e); setIsModalOpen(false)}}
                         style={{gap: '20px', fontFamily: 'Montserrat', justifyContent: 'space-between'}}
                     >
                         <div style={{display: 'flex', flexDirection: 'row', gap: '20px'}}>
@@ -259,9 +264,9 @@ function Migrate(props){
                 <div style={{fontSize: '3em', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '20px'}} onClick={() => setIsModalOpen(true)}>
                     Migrate from <span>
                         <div className="migrate-selection">
-                            <img src={market.img}></img>
+                            <img src={marketFrom.img}></img>
                             <div >
-                                {market.market}
+                                {marketFrom.market}
                             </div>
                             {/* <svg style={{transform: 'scale(1.5)'}} fill="none" height="7" width="14" xmlns="http://www.w3.org/2000/svg"><title>Dropdown</title><path d="M12.75 1.54001L8.51647 5.0038C7.77974 5.60658 6.72026 5.60658 5.98352 5.0038L1.75 1.54001" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" xmlns="http://www.w3.org/2000/svg"></path></svg> */}
                         </div>
@@ -270,19 +275,19 @@ function Migrate(props){
 
                 <div className="migrateBox">
                     <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%', height: '100%', alignItems: 'left'}}>
-                    {marketData && accountData && accountData.migrate && accountData.migrate.length && 
+                    {marketData && marketSourceData && migrateData && migrateData.length && 
                     <Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
                             <TableHead >
                                 <TableRow >
                                     <TableCell style={{fontFamily: 'Montserrat', border: 'none', fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Assets</TableCell>
                                     <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Amount</TableCell>
-                                    <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">Pool APY</TableCell>
-                                    <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">P2P APY</TableCell>
+                                    <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">{marketFrom.market} APY</TableCell>
+                                    <TableCell style={{fontFamily: 'Montserrat', border: 'none',fontSize: 16, color: 'white', fontWeight: 'bold', background: '#131724'}} align="left">{market.market} P2P APY</TableCell>
 
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                            {accountData.migrate.map((position, index) => (
+                            {migrateData.map((position, index) => (
                                 <TableRow
                                 key={position.token.name}
                                 sx= {{ 'td': { border: 0 }, 'th': { border: 0 }, '&:hover': {
@@ -302,7 +307,7 @@ function Migrate(props){
                                         </div>
                                     </TableCell>
                                     <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">{position.amount}</TableCell>
-                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">{marketData[position.token.ticker].deposit_apy}%</TableCell>
+                                    <TableCell className={selectedRows.includes(index) ? "selected-row" : "not-selected"} style={{fontFamily: 'Kanit', fontSize: 16}} align="left">{marketSourceData[position.token.ticker].deposit_apy}%</TableCell>
                                     <TableCell className={[selectedRows.includes(index) ? "selected-row" : "not-selected"].join(' ')} style={{borderTopRightRadius: '10px',
                                         borderBottomRightRadius: '10px', fontFamily: 'Kanit', fontSize: 16}} align="left">
                                             <ShiningText isSelected={selectedRows.includes(index) ? true : false} text={[marketData[position.token.ticker].p2p_apy, "%"].join("")}/>
@@ -313,8 +318,8 @@ function Migrate(props){
                             </TableBody>
                         </Table>
                         }
-                        
-                        {account && (!accountData || !marketData) &&
+
+                        {account && (!migrateData || !marketSourceData || !marketData) &&
                                  <Flex align="center" gap="middle" style={{flexDirection: 'column', height: '50vh', width: '100%'}}>
                                     <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', height: '50vh', flexDirection: 'column'}}>
                                         <Spin indicator={<LoadingOutlined style={{ fontSize: 96}} spin />} />
@@ -334,7 +339,7 @@ function Migrate(props){
                         </div>  }
 
 
-                        {marketData && accountData && accountData.migrate && accountData.migrate.length == 0
+                        {marketData && accountData && migrateData && marketSourceData && migrateData.length == 0
 
                             &&   <div className="empty">
                             <div style={{display: 'flex', flexDirection: 'column'}}>
@@ -342,7 +347,7 @@ function Migrate(props){
                                     <img src={empty} className='emptyimg' style={{width: '40%', height: '40%'}}></img>
                                 </div>
                                 <div>
-                                You have no position on {market.market}
+                                You have no position on {marketFrom.market}
                                 </div>
                             </div>
                         </div>  
@@ -351,7 +356,7 @@ function Migrate(props){
                 </div>
                 
                 <div style={{width: '20%'}} >
-                    <div className="migrateButton" disabled={selectedRows.length == 0} onClick={() => execute()}>
+                    <div className="migrateButton" disabled={selectedRows.length == 0} onClick={() => execute(marketFrom.id)}>
                         Migrate {selectedRows.length > 0 && (
                             <>
                                 {selectedRows.length} position{selectedRows.length > 1 ? 's' : ''}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supply, borrow, withdraw, repay, migrateFrom } from "../backend/EntryFunction";
+import { supply, borrow, withdraw, repay, migrate } from "../backend/EntryFunction";
 
 export const useMarketAction = (marketId, action, coinSymbol, amount, walletAddress, signer) => {
     const [isPending, setIsPending] = useState(false);
@@ -8,7 +8,7 @@ export const useMarketAction = (marketId, action, coinSymbol, amount, walletAddr
 
    
 
-    const execute = async () => {
+    const execute = async (sourceMarket) => {
         setIsPending(true);
         try{
             if(action == 'Supply'){
@@ -23,10 +23,9 @@ export const useMarketAction = (marketId, action, coinSymbol, amount, walletAddr
                 console.log(coinSymbol);
                 for(let i = 0; i < coinSymbol.length; i++){
                     const position = coinSymbol[i];
-                    console.log(position);
                     await new Promise(r => setTimeout(r, 200));
 
-                    await migrateFrom(position.token.ticker, position.amount, marketId, signer);
+                    await migrate(position.token.ticker, position.amount, sourceMarket, marketId, signer);
                 }
             }
         }catch(error){

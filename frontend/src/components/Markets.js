@@ -332,13 +332,13 @@ function Markets(props) {
 							// Supply
 						}
 						{(selectedTab <= 1) &&
-						<Info leftInfo="Supply APY" rightInfo={marketData ? marketData[token.ticker].deposit_apy : "-"}/>
+						<Info leftInfo="Supply APY" rightInfo={marketData ? [marketData[token.ticker].deposit_apy, '%'].join('') : "-"}/>
 						}
 						{(selectedTab >= 2) &&
-						<Info leftInfo="Borrow APY" rightInfo={marketData ? marketData[token.ticker].borrow_apy : "-"}/>
+						<Info leftInfo="Borrow APY" rightInfo={marketData ? [marketData[token.ticker].borrow_apy, '%'].join('') : "-"}/>
 						}
 
-						<Info leftInfo="P2P APY" rightInfo={marketData ? marketData[token.ticker].p2p_apy : "-"}/>
+						<Info leftInfo="P2P APY" rightInfo={marketData ? [marketData[token.ticker].p2p_apy, '%'].join('') : "-"}/>
 					</div>
 					<div className="migrateButton" disabled={!tokenAmount} onClick={() => execute()}>{tabs[selectedTab]}</div>
 				</div>

@@ -186,15 +186,19 @@ export async function depositToMockLending(coinSymbol, amount, market_id, signAn
     }
 }
 
-export async function migrateFrom(coinSymbol, amount, market_id, signAndSubmitTransaction) {
+export async function migrate(coinSymbol, amount, source_market_id, target_market_id, signAndSubmitTransaction) {
+    console.log(coinSymbol, amount, source_market_id, target_market_id);
     let moduleAddress;
-    let func;
-    if(market_id === 0) {
+    if(target_market_id === 0) {
         moduleAddress = moduleAriesMarket;
-        func = `${moduleAddress}::migrate::migrate_from_aries`
     } else {
         moduleAddress = moduleEchelonMarket;
-        func = `${moduleAddress}::migrate::migrate_from_echelon`
+    }
+    let func;
+    if(source_market_id === 0) {
+        func = `${moduleAddress}::migrate::migrate_from_aries`;
+    } else {
+        func = `${moduleAddress}::migrate::migrate_from_echelon`;
     }
     const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
     const amount_in_wei = amount * 1000000;
@@ -216,36 +220,3 @@ export async function migrateFrom(coinSymbol, amount, market_id, signAndSubmitTr
         return;
     }
 }
-
-export async function migrateTo(coinSymbol, amount, market_id, signAndSubmitTransaction) {
-    let moduleAddress;
-    let func;
-    if(market_id === 0) {
-        moduleAddress = moduleAriesMarket;
-        func = `${moduleAddress}::migrate::migrate_to_aries`
-    } else {
-        moduleAddress = moduleEchelonMarket;
-        func = `${moduleAddress}::migrate::migrate_to_echelon`
-    }
-    const coin = `${moduleAuritaCoin}::aurita_coin::${coinSymbol}`;
-    const amount_in_wei = amount * 1000000;
-
-    const payload = {
-        data: {
-            function: func,
-            typeArguments: [coin],
-            functionArguments: [amount_in_wei],
-        }
-    };
-
-    let result;
-    try {
-        const response = signAndSubmitTransaction(payload);
-        return response;
-    } catch(error) {
-        console.log(error);
-        return;
-    }
-}
-
-
