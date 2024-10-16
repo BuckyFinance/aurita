@@ -275,7 +275,7 @@ function Migrate(props){
 
                 <div className="migrateBox">
                     <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', width: '100%', height: '100%', alignItems: 'left'}}>
-                    {marketData && marketSourceData && migrateData && migrateData.length && 
+                    {(account && marketData && marketSourceData && migrateData && migrateData.length > 0) && 
                     <Table  aria-label="simple table" sx = {{backgroundColor: '#131724', borderRadius: 0}}>
                             <TableHead >
                                 <TableRow >
@@ -319,7 +319,8 @@ function Migrate(props){
                         </Table>
                         }
 
-                        {account && (!migrateData || !marketSourceData || !marketData) &&
+                        {(account && (!migrateData || !marketSourceData || !marketData)) &&
+                                
                                  <Flex align="center" gap="middle" style={{flexDirection: 'column', height: '50vh', width: '100%'}}>
                                     <div style={{alignItems: 'center', justifyContent: 'center', display: 'flex', height: '50vh', flexDirection: 'column'}}>
                                         <Spin indicator={<LoadingOutlined style={{ fontSize: 96}} spin />} />
@@ -327,7 +328,7 @@ function Migrate(props){
                                     </div>
                                 </Flex>
                             }
-                        {!account && <div className="empty">
+                        {(!account) && <div className="empty">
                             <div style={{display: 'flex', flexDirection: 'column'}}>
                                 <div>
                                     <img src={Connect} className='emptyimg' style={{width: '25%', height: '25%'}}></img>
@@ -339,18 +340,21 @@ function Migrate(props){
                         </div>  }
 
 
-                        {marketData && accountData && migrateData && marketSourceData && migrateData.length == 0
+                        {(account && marketData && accountData && migrateData && marketSourceData && !migrateData.length)
 
-                            &&   <div className="empty">
-                            <div style={{display: 'flex', flexDirection: 'column'}}>
-                                <div>
-                                    <img src={empty} className='emptyimg' style={{width: '40%', height: '40%'}}></img>
+                            &&  
+                            <>
+                                <div className="empty">
+                                <div style={{display: 'flex', flexDirection: 'column'}}>
+                                    <div>
+                                        <img src={empty} className='emptyimg' style={{width: '40%', height: '40%'}}></img>
+                                    </div>
+                                    <div>
+                                    You have no position on {marketFrom.market}
+                                    </div>
                                 </div>
-                                <div>
-                                You have no position on {marketFrom.market}
-                                </div>
-                            </div>
-                        </div>  
+                            </div> 
+                            </> 
                         }
                     </div>
                 </div>
